@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dadodec - Document Generator</title>
+    
+    <!-- Google Fonts: Cinzel & Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- html2pdf.js CDN for PDF export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Phosphor Icons for SaaS look -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: {
+                            50: '#fbf9ee',
+                            100: '#f6efd0',
+                            200: '#eddca1',
+                            400: '#dfba55',
+                            500: '#d4af37',
+                            600: '#b5902a',
+                            700: '#8c6b1c',
+                            800: '#634b15',
+                            900: '#433210',
+                        },
+                        slate: {
+                            850: '#131e32',
+                            900: '#0f172a',
+                            950: '#080d1a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        serif: ['Cinzel', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* SaaS UI Styles */
+        body { background-color: #f8fafc; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        
+        /* A4 Document Styling */
+        .document-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .document-sheet {
+            width: 210mm;
+            min-height: 297mm;
+            background-color: #ffffff;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            margin: 0 auto;
+            padding: 12mm 15mm;
+            flex-shrink: 0;
+            color: #1e293b;
+        }
+
+        .document-watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-family: 'Cinzel', serif;
+            font-size: 6rem;
+            font-weight: 800;
+            color: rgba(212, 175, 55, 0.03); /* Very subtle gold */
+            letter-spacing: 0.1em;
+            pointer-events: none;
+            user-select: none;
+            white-space: nowrap;
+            z-index: 0;
+        }
+
+        .doc-content {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Clean Table Styles for PDF */
+        .pdf-table th {
+            background-color: #f1f5f9;
+            color: #334155;
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 0.05em;
+            padding: 8px;
+            border-bottom: 2px solid #cbd5e1;
+        }
+        .pdf-table td {
+            padding: 8px;
+            font-size: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+        .pdf-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Responsive Scaling for Preview */
+        @media (max-width: 1280px) {
+            .document-sheet {
+                transform: scale(0.85);
+                transform-origin: top center;
+                margin-bottom: -15%;
+            }
+        }
+        @media (max-width: 1024px) {
+            .document-sheet {
+                transform: scale(0.7);
+                margin-bottom: -30%;
+            }
+        }
+
+        /* Print CSS Rules */
+        @media print {
+            body * { visibility: hidden; }
+            .no-print { display: none !important; }
+            #view-editor { display: block !important; }
+            .document-sheet, .document-sheet * { visibility: visible; }
+            .document-sheet {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 10mm 15mm !important;
+                box-shadow: none !important;
+                transform: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-slate-800 font-sans antialiased">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-20 lg:w-64 bg-slate-900 text-slate-300 flex flex-col transition-all duration-300 z-30 shadow-xl no-print">
+        <!-- Logo Area -->
+        <div class="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-slate-800">
+            <div class="w-8 h-8 bg-gold-500 rounded flex items-center justify-center text-slate-900 font-serif font-bold text-lg shadow-sm">D</div>
+            <span class="hidden lg:block ml-3 font-serif font-bold text-white tracking-wider text-sm">DADODEC</span>
+        </div>
+
+        <!-- Menu -->
+        <nav class="flex-1 py-6 space-y-2 px-3">
+            <button onclick="switchView('editor')" id="nav-editor" class="w-full flex items-center p-3 rounded-lg bg-gold-500/10 text-gold-400 font-medium transition-colors group">
+                <i class="ph ph-file-text text-xl"></i>
+                <span class="hidden lg:block ml-3 text-sm">Create Document</span>
+            </button>
+            <button onclick="switchView('settings')" id="nav-settings" class="w-full flex items-center p-3 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white font-medium transition-colors group">
+                <i class="ph ph-gear text-xl"></i>
+                <span class="hidden lg:block ml-3 text-sm">Settings & Assets</span>
+            </button>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800 text-center lg:text-left">
+            <div class="w-8 h-8 rounded-full bg-slate-700 mx-auto lg:mx-0 flex items-center justify-center text-xs font-bold text-white">AD</div>
+            <div class="hidden lg:block mt-2">
+                <div class="text-xs font-bold text-white">Admin User</div>
+                <div class="text-[10px] text-slate-500">Dadodec Interiors</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 relative">
+        
+        <!-- Top App Bar -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-20 shadow-sm no-print">
+            <div class="flex items-center space-x-2">
+                <h1 id="topbar-title" class="font-bold text-slate-800 text-lg">Create Document</h1>
+                <span id="topbar-subtitle" class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-medium ml-2">Editor</span>
+            </div>
+            
+            <div class="flex items-center space-x-3" id="topbar-actions">
+                <button onclick="window.print()" class="hidden md:flex items-center px-3 py-1.5 bg-white border border-slate-300 text-slate-600 rounded text-xs font-semibold hover:bg-slate-50 transition">
+                    <i class="ph ph-printer mr-1.5 text-base"></i> Print
+                </button>
+                <button onclick="exportToPDF()" class="flex items-center px-4 py-2 bg-slate-900 text-gold-400 rounded-md text-sm font-bold shadow-md hover:bg-slate-800 transition transform hover:-translate-y-0.5">
+                    <i class="ph ph-download-simple mr-2 text-lg"></i> Download PDF
+                </button>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="flex-1 overflow-y-auto relative w-full h-full custom-scrollbar">
+            
+            <!-- ================= VIEW: SETTINGS ================= -->
+            <div id="view-settings" class="hidden p-6 lg:p-10 max-w-4xl mx-auto pb-24">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-serif font-bold text-slate-900">Company Settings & Assets</h2>
+                    <p class="text-slate-500 text-sm mt-1">Configure your default company details, logo, and document terms. These will be automatically applied to all new documents.</p>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Branding Section -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center">
+                            <i class="ph ph-palette text-slate-500 mr-2 text-lg"></i>
+                            <h3 class="font-semibold text-slate-800 text-sm">Branding & Logo</h3>
+                        </div>
+                        <div class="p-5">
+                            <div class="flex items-start space-x-6">
+                                <div class="w-32 h-32 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 relative overflow-hidden group">
+                                    <img id="settings-logo-preview" src="" class="hidden w-full h-full object-contain p-2" alt="Logo Preview">
+                                    <div id="settings-logo-placeholder" class="text-center text-slate-400">
+                                        <i class="ph ph-image text-3xl mb-1"></i>
+                                        <div class="text-[10px] uppercase font-bold">No Logo</div>
+                                    </div>
+                                    <label class="absolute inset-0 bg-slate-900/60 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity text-xs font-semibold">
+                                        Upload
+                                        <input type="file" id="settings-logo-upload" accept="image/*" onchange="handleSettingsLogoUpload(event)" class="hidden">
+                                    </label>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-xs text-slate-500 mb-3">Upload a high-resolution logo (PNG/JPG). It will appear on the top left of all your documents. To remove the logo, clear the application data.</p>
+                                    <button onclick="document.getElementById('settings-logo-upload').click()" class="px-3 py-1.5 bg-slate-100 border border-slate-300 text-slate-700 rounded text-xs font-semibold hover:bg-slate-200 transition">
+                                        Choose Image
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Company Details -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center">
+                            <i class="ph ph-buildings text-slate-500 mr-2 text-lg"></i>
+                            <h3 class="font-semibold text-slate-800 text-sm">Company Details</h3>
+                        </div>
+                        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Registered Company Name</label>
+                                <input type="text" id="set-company-name" class="w-full bg-white border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">GSTIN Number</label>
+                                <input type="text" id="set-company-gstin" class="w-full bg-white border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none transition">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Full Address & Contact String</label>
+                                <input type="text" id="set-company-addr" class="w-full bg-white border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none transition">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financial & Defaults -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center">
+                            <i class="ph ph-bank text-slate-500 mr-2 text-lg"></i>
+                            <h3 class="font-semibold text-slate-800 text-sm">Financials & Defaults</h3>
+                        </div>
+                        <div class="p-5 space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Default Bank Account Details (NEFT/RTGS)</label>
+                                <input type="text" id="set-bank-details" class="w-full bg-white border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Default Payment Schedule / Terms</label>
+                                <textarea id="set-payment-terms" rows="2" class="w-full bg-white border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none transition"></textarea>
+                            </div>
+                            <div class="w-1/2">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Default Tax Category</label>
+                                <select id="set-tax-mode" class="w-full bg-white border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none transition">
+                                    <option value="intra">Intrastate (9% CGST + 9% SGST)</option>
+                                    <option value="inter">Interstate (18% IGST)</option>
+                                    <option value="none">Exempt / No Tax (0%)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Save Action -->
+                    <div class="flex justify-end pt-2">
+                        <button onclick="saveSettings()" class="flex items-center px-6 py-2.5 bg-gold-500 text-slate-900 rounded-md text-sm font-bold shadow hover:bg-gold-600 transition">
+                            <i class="ph ph-floppy-disk mr-2 text-lg"></i> Save Configuration
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- ================= VIEW: EDITOR ================= -->
+            <div id="view-editor" class="flex flex-col xl:flex-row h-full">
+                
+                <!-- LEFT PANEL: Controls (Scrollable) -->
+                <div class="w-full xl:w-5/12 bg-white border-r border-slate-200 h-auto xl:h-full overflow-y-auto custom-scrollbar p-6 no-print space-y-6 shrink-0 z-10 shadow-[4px_0_15px_-3px_rgba(0,0,0,0.05)]">
+                    
+                    <!-- Document Mode -->
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Document Type</label>
+                        <div class="flex bg-slate-100 p-1 rounded-lg">
+                            <button id="btn-mode-quote" onclick="setDocumentMode('quote')" class="flex-1 py-1.5 text-xs font-bold rounded-md bg-white text-slate-800 shadow-sm transition">
+                                Quotation
+                            </button>
+                            <button id="btn-mode-receipt" onclick="setDocumentMode('receipt')" class="flex-1 py-1.5 text-xs font-bold rounded-md text-slate-500 hover:text-slate-800 transition">
+                                Receipt
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Client Details Form -->
+                    <div class="space-y-3 border-t border-slate-100 pt-4">
+                        <div class="flex justify-between items-center mb-1">
+                            <h3 class="text-sm font-bold text-slate-800">Client Info</h3>
+                            <div class="text-[10px] text-slate-400">Ref: <input type="text" id="cfg-quote-no" value="DDI/2026/089" oninput="updatePreview()" class="w-24 bg-transparent border-b border-slate-300 text-slate-800 focus:outline-none"></div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-500 mb-1">Client Name</label>
+                                <input type="text" id="cfg-client-name" value="Mr. Sunil Sharma" oninput="updatePreview()" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs focus:ring-1 focus:ring-gold-500 focus:border-gold-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-slate-500 mb-1">Phone</label>
+                                <input type="text" id="cfg-client-phone" value="+91 99000 12345" oninput="updatePreview()" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs focus:ring-1 focus:ring-gold-500 focus:border-gold-500 outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-500 mb-1">Project Site Address</label>
+                            <input type="text" id="cfg-site-address" value="Flat 402, Prestige Lakeside, Whitefield, Bengaluru" oninput="updatePreview()" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs focus:ring-1 focus:ring-gold-500 focus:border-gold-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-500 mb-1">Document Date</label>
+                            <input type="date" id="cfg-quote-date" onchange="updatePreview()" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs focus:ring-1 focus:ring-gold-500 focus:border-gold-500 outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Receipt Specific Form -->
+                    <div id="receipt-inputs-panel" class="hidden space-y-3 border-t border-slate-100 pt-4 bg-emerald-50/50 p-3 rounded-lg border border-emerald-100">
+                        <h3 class="text-sm font-bold text-emerald-800 mb-1">Payment Received</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[10px] font-semibold text-emerald-700 mb-1">Amount Paid (₹)</label>
+                                <input type="number" id="cfg-paid-amount" value="250000" min="0" step="5000" oninput="updatePreview()" class="w-full bg-white border border-emerald-300 rounded p-2 font-bold text-emerald-900 text-xs focus:ring-1 focus:ring-emerald-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-semibold text-emerald-700 mb-1">Payment Mode</label>
+                                <select id="cfg-payment-mode" onchange="updatePreview()" class="w-full bg-white border border-emerald-300 rounded p-2 text-xs focus:ring-1 focus:ring-emerald-500 outline-none">
+                                    <option value="NEFT / Bank Transfer">NEFT / Bank</option>
+                                    <option value="UPI / GPay">UPI / GPay</option>
+                                    <option value="Cheque">Cheque</option>
+                                    <option value="Cash">Cash</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-semibold text-emerald-700 mb-1">Txn Ref / Cheque No.</label>
+                            <input type="text" id="cfg-txn-ref" value="UTIB00012903812" oninput="updatePreview()" class="w-full bg-white border border-emerald-300 rounded p-2 text-xs focus:ring-1 focus:ring-emerald-500 outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Line Items Builder -->
+                    <div class="border-t border-slate-100 pt-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-sm font-bold text-slate-800">Line Items</h3>
+                            <button onclick="addNewLineItem()" class="text-xs bg-slate-900 text-gold-400 font-semibold px-2.5 py-1 rounded hover:bg-slate-800 transition">
+                                + Add Item
+                            </button>
+                        </div>
+                        
+                        <div id="items-builder-container" class="space-y-3">
+                            <!-- JS Injected Items -->
+                        </div>
+                    </div>
+
+                    <!-- Discount & Overrides -->
+                    <div class="border-t border-slate-100 pt-4 pb-10">
+                        <h3 class="text-sm font-bold text-slate-800 mb-3">Discount</h3>
+                        <div class="w-1/2">
+                            <label class="block text-[10px] font-semibold text-slate-500 mb-1">Flat Discount (₹)</label>
+                            <input type="number" id="cfg-discount" value="15000" min="0" step="1000" oninput="updatePreview()" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs focus:ring-1 focus:ring-gold-500 focus:border-gold-500 outline-none">
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT PANEL: Document Preview (Scrollable container for A4 sheet) -->
+                <div class="w-full xl:w-7/12 bg-slate-200/60 overflow-y-auto p-4 lg:p-10 custom-scrollbar flex justify-center">
+                    
+                    <div class="document-wrapper">
+                        <!-- THE A4 PRINT SHEET -->
+                        <div id="quotation-print-sheet" class="document-sheet">
+                            
+                            <!-- Subtle Watermark -->
+                            <div class="document-watermark">DADODEC</div>
+
+                            <div class="doc-content h-full flex flex-col">
+                                
+                                <!-- Document Header -->
+                                <div class="flex justify-between items-start border-b-2 border-slate-900 pb-5 mb-5">
+                                    <div class="flex items-start gap-4">
+                                        <div id="pv-logo-container" class="w-16 h-16 flex items-center justify-center bg-slate-900 rounded-lg text-gold-400 font-serif font-extrabold text-3xl shrink-0">D</div>
+                                        <div>
+                                            <h1 id="pv-company-name" class="font-serif font-bold text-2xl text-slate-900 tracking-wide uppercase">Dadodec Interiors</h1>
+                                            <p id="pv-company-addr" class="text-[10px] text-slate-500 mt-1 max-w-[250px] leading-relaxed">123 Design Avenue, Indiranagar, Bengaluru, Karnataka | +91 98765 43210</p>
+                                            <p class="text-[10px] text-slate-700 font-semibold mt-0.5">GSTIN: <span id="pv-company-gstin">29AABCD1234E1Z5</span></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-right">
+                                        <div id="pv-doc-type" class="text-xl font-serif font-bold text-gold-700 uppercase tracking-widest mb-2">Quotation</div>
+                                        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-700 text-left w-48 ml-auto">
+                                            <span class="font-semibold text-right">Date:</span>
+                                            <span id="pv-quote-date">--</span>
+                                            
+                                            <span class="font-semibold text-right">Ref No:</span>
+                                            <span id="pv-quote-no" class="font-medium">--</span>
+                                            
+                                            <span id="pv-validity-lbl" class="font-semibold text-right">Validity:</span>
+                                            <span id="pv-validity-val" class="font-medium">30 Days</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Entities Info -->
+                                <div class="grid grid-cols-2 gap-8 mb-6">
+                                    <!-- Bill To -->
+                                    <div class="bg-slate-50 p-4 rounded border border-slate-200">
+                                        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Billed To</h4>
+                                        <div id="pv-client-name" class="font-bold text-slate-900 text-sm mb-1">Mr. Client Name</div>
+                                        <div id="pv-client-phone" class="text-xs text-slate-600 mb-1">+91 00000 00000</div>
+                                    </div>
+                                    <!-- Project Site -->
+                                    <div class="bg-slate-50 p-4 rounded border border-slate-200">
+                                        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Project Site</h4>
+                                        <div id="pv-site-address" class="text-xs text-slate-800 leading-relaxed">Site Address Here</div>
+                                    </div>
+                                </div>
+
+                                <!-- Receipt Banner (Dynamic) -->
+                                <div id="pv-receipt-banner" class="hidden mb-6 bg-emerald-50 border border-emerald-200 rounded p-4 grid grid-cols-3 gap-4 text-center">
+                                    <div class="border-r border-emerald-200/60">
+                                        <span class="text-[9px] font-bold uppercase text-emerald-600 tracking-wider block mb-1">Amount Received</span>
+                                        <span id="pv-receipt-amount-display" class="font-bold text-lg text-emerald-700">₹ 0.00</span>
+                                    </div>
+                                    <div class="border-r border-emerald-200/60">
+                                        <span class="text-[9px] font-bold uppercase text-emerald-600 tracking-wider block mb-1">Payment Mode</span>
+                                        <span id="pv-receipt-mode-display" class="font-semibold text-slate-800 text-sm">--</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-[9px] font-bold uppercase text-emerald-600 tracking-wider block mb-1">Txn Ref / Cheque</span>
+                                        <span id="pv-receipt-ref-display" class="font-semibold text-slate-800 text-sm">--</span>
+                                    </div>
+                                </div>
+
+                                <!-- Items Table -->
+                                <div class="flex-grow">
+                                    <table class="w-full text-left pdf-table border-collapse">
+                                        <thead>
+                                            <tr>
+                                                <th class="w-8 text-center rounded-tl">#</th>
+                                                <th class="w-32">Room / Area</th>
+                                                <th>Description</th>
+                                                <th class="w-20 text-center">Qty</th>
+                                                <th class="w-24 text-right">Rate</th>
+                                                <th class="w-28 text-right rounded-tr">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="pv-items-table-body">
+                                            <!-- Dynamically populated rows -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Financial Totals & Terms -->
+                                <div class="mt-6 flex justify-between items-start pt-4 border-t-2 border-slate-800">
+                                    
+                                    <!-- Left: Terms & Words -->
+                                    <div class="w-7/12 pr-6">
+                                        <div class="mb-4">
+                                            <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-1">Total Amount in Words</span>
+                                            <span id="pv-words" class="text-xs font-semibold text-slate-800 italic">Rupees Zero Only</span>
+                                        </div>
+                                        <div class="mb-4">
+                                            <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-1">Payment Schedule</span>
+                                            <p id="pv-payment-terms" class="text-[10px] text-slate-600 leading-relaxed bg-slate-50 p-2 rounded border border-slate-100">
+                                                --
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-1">Bank Details (NEFT/RTGS)</span>
+                                            <p id="pv-bank-details" class="text-[10px] text-slate-600 leading-relaxed bg-slate-50 p-2 rounded border border-slate-100">
+                                                --
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Right: Calculations -->
+                                    <div class="w-5/12 bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs">
+                                        <div class="flex justify-between mb-2 pb-2 border-b border-slate-200">
+                                            <span class="text-slate-600">Subtotal:</span>
+                                            <span id="pv-subtotal" class="font-semibold text-slate-800">₹ 0.00</span>
+                                        </div>
+                                        <div class="flex justify-between mb-2 pb-2 border-b border-slate-200">
+                                            <span class="text-slate-600">Discount:</span>
+                                            <span id="pv-discount" class="font-semibold text-rose-600">-₹ 0.00</span>
+                                        </div>
+                                        <div class="flex justify-between mb-2 font-medium">
+                                            <span class="text-slate-700">Taxable Value:</span>
+                                            <span id="pv-taxable" class="text-slate-800">₹ 0.00</span>
+                                        </div>
+                                        <div id="pv-row-cgst" class="flex justify-between mb-1">
+                                            <span class="text-slate-500">CGST (9%):</span>
+                                            <span id="pv-cgst" class="text-slate-700">₹ 0.00</span>
+                                        </div>
+                                        <div id="pv-row-sgst" class="flex justify-between mb-2 pb-2 border-b border-slate-200">
+                                            <span class="text-slate-500">SGST (9%):</span>
+                                            <span id="pv-sgst" class="text-slate-700">₹ 0.00</span>
+                                        </div>
+                                        <div id="pv-row-igst" class="hidden justify-between mb-2 pb-2 border-b border-slate-200">
+                                            <span class="text-slate-500">IGST (18%):</span>
+                                            <span id="pv-igst" class="text-slate-700">₹ 0.00</span>
+                                        </div>
+                                        <div class="flex justify-between items-center mt-2 pt-2 border-t-2 border-slate-800">
+                                            <span class="font-bold text-sm text-slate-900">Grand Total:</span>
+                                            <span id="pv-grandtotal" class="font-bold text-lg text-gold-600">₹ 0.00</span>
+                                        </div>
+
+                                        <!-- Receipt Balances -->
+                                        <div id="pv-receipt-due-row" class="hidden mt-3 pt-3 border-t border-slate-300">
+                                            <div class="flex justify-between mb-1">
+                                                <span class="font-semibold text-emerald-700">Amount Paid:</span>
+                                                <span id="pv-receipt-paid-display" class="font-bold text-emerald-700">₹ 0.00</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="font-semibold text-rose-600">Balance Due:</span>
+                                                <span id="pv-receipt-due-display" class="font-bold text-rose-600">₹ 0.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+
+                                <!-- Signature Footer -->
+                                <div class="mt-12 flex justify-end">
+                                    <div class="text-center w-48">
+                                        <div class="border-b border-slate-400 mb-2 h-10"></div>
+                                        <span class="text-[9px] font-bold uppercase text-slate-500 tracking-wider">Authorized Signatory</span>
+                                        <div class="text-[10px] text-slate-800 font-medium mt-0.5" id="pv-sig-company">Dadodec Interiors</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // ---- APPLICATION STATE ----
+        let appSettings = {
+            companyName: 'Dadodec Interiors',
+            companyGstin: '29AABCD1234E1Z5',
+            companyAddr: '123 Design Avenue, Indiranagar, Bengaluru, Karnataka | +91 98765 43210',
+            defaultTerms: '10% Booking | 40% Material Procurement | 30% Carcass Completion | 15% Shutters & Hardware | 5% Handover',
+            bankDetails: 'HDFC Bank | A/C: 50200012345678 | IFSC: HDFC0001234 | UPI: dadodec@hdfcbank',
+            taxMode: 'intra',
+            logoBase64: null
+        };
+
+        let docMode = 'quote'; // 'quote' or 'receipt'
+        let lineItems = [
+            { id: 1, room: 'Kitchen', desc: 'Modular Acrylic Kitchen - Base & Wall Cabinets (Waterproof HDMR Ply + Hafele Hardware)', qty: 95, unit: 'sqft', rate: 2200 },
+            { id: 2, room: 'Master Bedroom', desc: 'Full Height Wardrobe with Sliding Mechanism & High Gloss Merino Laminate Finish', qty: 120, unit: 'sqft', rate: 1850 },
+            { id: 3, room: 'Living Room', desc: 'Gypsum Board False Ceiling with Peripheral LED Cove Lighting & Cutouts', qty: 350, unit: 'sqft', rate: 140 }
+        ];
+
+        // ---- INITIALIZATION ----
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            
+            const dateEl = document.getElementById('cfg-quote-date');
+            if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+            
+            renderBuilderItems();
+            updatePreview();
+        });
+
+        // View Switcher (SaaS Tab Navigation)
+        function switchView(view) {
+            const views = ['editor', 'settings'];
+            const titleEl = document.getElementById('topbar-title');
+            const subtitleEl = document.getElementById('topbar-subtitle');
+            const actions = document.getElementById('topbar-actions');
+
+            views.forEach(v => {
+                const el = document.getElementById(`view-${v}`);
+                const navBtn = document.getElementById(`nav-${v}`);
+                
+                if (v === view) {
+                    el.classList.remove('hidden');
+                    if (v === 'editor') el.classList.add('flex', 'flex-col', 'xl:flex-row');
+                    
+                    navBtn.classList.replace('text-slate-400', 'text-gold-400');
+                    navBtn.classList.replace('hover:text-white', 'text-gold-400');
+                    navBtn.classList.replace('hover:bg-slate-800', 'bg-gold-500/10');
+                } else {
+                    el.classList.add('hidden');
+                    if (v === 'editor') el.classList.remove('flex', 'flex-col', 'xl:flex-row');
+                    
+                    navBtn.classList.replace('text-gold-400', 'text-slate-400');
+                    navBtn.classList.replace('bg-gold-500/10', 'hover:bg-slate-800');
+                    navBtn.classList.add('hover:text-white');
+                }
+            });
+
+            if (view === 'settings') {
+                titleEl.textContent = 'Configuration';
+                subtitleEl.textContent = 'Settings';
+                actions.classList.add('hidden');
+            } else {
+                titleEl.textContent = 'Create Document';
+                subtitleEl.textContent = 'Editor';
+                actions.classList.remove('hidden');
+            }
+        }
+
+        // Settings Management
+        function loadSettings() {
+            const saved = localStorage.getItem('dadodec_settings');
+            if (saved) {
+                appSettings = { ...appSettings, ...JSON.parse(saved) };
+            }
+
+            // Populate Settings Form
+            document.getElementById('set-company-name').value = appSettings.companyName;
+            document.getElementById('set-company-gstin').value = appSettings.companyGstin;
+            document.getElementById('set-company-addr').value = appSettings.companyAddr;
+            document.getElementById('set-payment-terms').value = appSettings.defaultTerms;
+            document.getElementById('set-bank-details').value = appSettings.bankDetails;
+            document.getElementById('set-tax-mode').value = appSettings.taxMode;
+
+            if (appSettings.logoBase64) {
+                applyLogoToPreview(appSettings.logoBase64);
+            }
+        }
+
+        function saveSettings() {
+            appSettings.companyName = document.getElementById('set-company-name').value;
+            appSettings.companyGstin = document.getElementById('set-company-gstin').value;
+            appSettings.companyAddr = document.getElementById('set-company-addr').value;
+            appSettings.defaultTerms = document.getElementById('set-payment-terms').value;
+            appSettings.bankDetails = document.getElementById('set-bank-details').value;
+            appSettings.taxMode = document.getElementById('set-tax-mode').value;
+
+            localStorage.setItem('dadodec_settings', JSON.stringify(appSettings));
+            
+            // Notification toast could go here
+            alert("Settings saved successfully!");
+            
+            updatePreview();
+            switchView('editor');
+        }
+
+        function handleSettingsLogoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    appSettings.logoBase64 = e.target.result;
+                    applyLogoToPreview(appSettings.logoBase64);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function applyLogoToPreview(base64Str) {
+            // Settings pane preview
+            document.getElementById('settings-logo-preview').src = base64Str;
+            document.getElementById('settings-logo-preview').classList.remove('hidden');
+            document.getElementById('settings-logo-placeholder').classList.add('hidden');
+            
+            // Document preview pane
+            const pvContainer = document.getElementById('pv-logo-container');
+            pvContainer.innerHTML = `<img src="${base64Str}" alt="Logo" class="w-full h-full object-contain">`;
+            pvContainer.classList.remove('bg-slate-900', 'text-gold-400');
+            pvContainer.classList.add('bg-transparent');
+        }
+
+        // Editor Logic
+        function setDocumentMode(mode) {
+            docMode = mode;
+            const btnQuote = document.getElementById('btn-mode-quote');
+            const btnReceipt = document.getElementById('btn-mode-receipt');
+            const receiptInputs = document.getElementById('receipt-inputs-panel');
+            
+            const pvDocType = document.getElementById('pv-doc-type');
+            const pvValidityLbl = document.getElementById('pv-validity-lbl');
+            const pvValidityVal = document.getElementById('pv-validity-val');
+            const pvReceiptBanner = document.getElementById('pv-receipt-banner');
+            const pvReceiptDueRow = document.getElementById('pv-receipt-due-row');
+
+            if (mode === 'quote') {
+                btnQuote.className = "flex-1 py-1.5 text-xs font-bold rounded-md bg-white text-slate-800 shadow-sm transition";
+                btnReceipt.className = "flex-1 py-1.5 text-xs font-bold rounded-md text-slate-500 hover:text-slate-800 transition";
+                
+                receiptInputs.classList.add('hidden');
+                
+                pvDocType.textContent = "Quotation";
+                pvValidityLbl.classList.remove('hidden');
+                pvValidityVal.classList.remove('hidden');
+                pvReceiptBanner.classList.add('hidden');
+                pvReceiptDueRow.classList.add('hidden');
+            } else {
+                btnReceipt.className = "flex-1 py-1.5 text-xs font-bold rounded-md bg-white text-slate-800 shadow-sm transition";
+                btnQuote.className = "flex-1 py-1.5 text-xs font-bold rounded-md text-slate-500 hover:text-slate-800 transition";
+                
+                receiptInputs.classList.remove('hidden');
+                
+                pvDocType.textContent = "Payment Receipt";
+                pvValidityLbl.classList.add('hidden');
+                pvValidityVal.classList.add('hidden');
+                pvReceiptBanner.classList.remove('hidden');
+                pvReceiptDueRow.classList.remove('hidden');
+            }
+            updatePreview();
+        }
+
+        function addNewLineItem() {
+            lineItems.push({
+                id: Date.now(),
+                room: '',
+                desc: '',
+                qty: 1,
+                unit: 'sqft',
+                rate: 0
+            });
+            renderBuilderItems();
+            updatePreview();
+        }
+
+        function removeLineItem(id) {
+            lineItems = lineItems.filter(item => item.id !== id);
+            renderBuilderItems();
+            updatePreview();
+        }
+
+        function updateLineItem(id, field, value) {
+            const item = lineItems.find(i => i.id === id);
+            if (item) {
+                item[field] = (field === 'qty' || field === 'rate') ? (parseFloat(value) || 0) : value;
+                updatePreview();
+                // Update local total display in builder
+                const el = document.getElementById(`subtotal-${id}`);
+                if (el) el.textContent = formatCurrency(item.qty * item.rate);
+            }
+        }
+
+        function renderBuilderItems() {
+            const container = document.getElementById('items-builder-container');
+            container.innerHTML = '';
+
+            lineItems.forEach((item, index) => {
+                const total = item.qty * item.rate;
+                const row = document.createElement('div');
+                row.className = 'bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs relative group';
+                row.innerHTML = `
+                    <button onclick="removeLineItem(${item.id})" class="absolute -top-2 -right-2 w-5 h-5 bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-200 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
+                        <i class="ph ph-x text-xs"></i>
+                    </button>
+                    <div class="grid grid-cols-12 gap-2">
+                        <div class="col-span-12 md:col-span-4">
+                            <input type="text" placeholder="Room / Area" value="${item.room}" oninput="updateLineItem(${item.id}, 'room', this.value)" class="w-full bg-white border border-slate-200 rounded p-1.5 focus:border-gold-500 outline-none">
+                        </div>
+                        <div class="col-span-12 md:col-span-8">
+                            <input type="text" placeholder="Description / Specification" value="${item.desc}" oninput="updateLineItem(${item.id}, 'desc', this.value)" class="w-full bg-white border border-slate-200 rounded p-1.5 focus:border-gold-500 outline-none">
+                        </div>
+                        
+                        <div class="col-span-4 md:col-span-3">
+                            <input type="number" placeholder="Qty" value="${item.qty}" min="0" step="0.1" oninput="updateLineItem(${item.id}, 'qty', this.value)" class="w-full bg-white border border-slate-200 rounded p-1.5 focus:border-gold-500 outline-none">
+                        </div>
+                        <div class="col-span-4 md:col-span-3">
+                            <select onchange="updateLineItem(${item.id}, 'unit', this.value)" class="w-full bg-white border border-slate-200 rounded p-1.5 focus:border-gold-500 outline-none">
+                                <option value="sqft" ${item.unit === 'sqft' ? 'selected' : ''}>sq.ft.</option>
+                                <option value="nos" ${item.unit === 'nos' ? 'selected' : ''}>nos</option>
+                                <option value="ls" ${item.unit === 'ls' ? 'selected' : ''}>lumpsum</option>
+                            </select>
+                        </div>
+                        <div class="col-span-4 md:col-span-3">
+                            <input type="number" placeholder="Rate" value="${item.rate}" min="0" oninput="updateLineItem(${item.id}, 'rate', this.value)" class="w-full bg-white border border-slate-200 rounded p-1.5 focus:border-gold-500 outline-none">
+                        </div>
+                        <div class="col-span-12 md:col-span-3 flex items-center justify-end font-semibold text-slate-800 px-2">
+                            <span id="subtotal-${item.id}">${formatCurrency(total)}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        // Preview Sync & Maths
+        function updatePreview() {
+            // Apply Settings to Header
+            document.getElementById('pv-company-name').textContent = appSettings.companyName;
+            document.getElementById('pv-sig-company').textContent = appSettings.companyName;
+            document.getElementById('pv-company-gstin').textContent = appSettings.companyGstin;
+            document.getElementById('pv-company-addr').textContent = appSettings.companyAddr;
+            document.getElementById('pv-payment-terms').textContent = appSettings.defaultTerms;
+            document.getElementById('pv-bank-details').textContent = appSettings.bankDetails;
+
+            // Apply Form Meta
+            document.getElementById('pv-quote-no').textContent = document.getElementById('cfg-quote-no').value || '--';
+            
+            const rawDate = document.getElementById('cfg-quote-date').value;
+            let formattedDate = '--';
+            if (rawDate) {
+                const d = new Date(rawDate);
+                formattedDate = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            }
+            document.getElementById('pv-quote-date').textContent = formattedDate;
+            
+            document.getElementById('pv-client-name').textContent = document.getElementById('cfg-client-name').value || '--';
+            document.getElementById('pv-client-phone').textContent = document.getElementById('cfg-client-phone').value || '--';
+            document.getElementById('pv-site-address').textContent = document.getElementById('cfg-site-address').value || '--';
+
+            // Items Table
+            const tbody = document.getElementById('pv-items-table-body');
+            tbody.innerHTML = '';
+            let subtotal = 0;
+
+            lineItems.forEach((item, idx) => {
+                const itemTotal = item.qty * item.rate;
+                subtotal += itemTotal;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="text-center font-medium text-slate-400">${idx + 1}</td>
+                    <td class="font-semibold text-slate-800">${item.room}</td>
+                    <td class="text-slate-600">${item.desc}</td>
+                    <td class="text-center">${item.qty} <span class="text-[9px] uppercase text-slate-400">${item.unit}</span></td>
+                    <td class="text-right">${formatCurrency(item.rate)}</td>
+                    <td class="text-right font-semibold text-slate-900">${formatCurrency(itemTotal)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Financials
+            const discount = parseFloat(document.getElementById('cfg-discount').value) || 0;
+            const taxable = Math.max(0, subtotal - discount);
+            let cgst = 0, sgst = 0, igst = 0, grandTotal = taxable;
+
+            if (appSettings.taxMode === 'intra') {
+                cgst = taxable * 0.09;
+                sgst = taxable * 0.09;
+                grandTotal += cgst + sgst;
+                document.getElementById('pv-row-cgst').classList.remove('hidden');
+                document.getElementById('pv-row-sgst').classList.remove('hidden');
+                document.getElementById('pv-row-igst').classList.add('hidden');
+            } else if (appSettings.taxMode === 'inter') {
+                igst = taxable * 0.18;
+                grandTotal += igst;
+                document.getElementById('pv-row-cgst').classList.add('hidden');
+                document.getElementById('pv-row-sgst').classList.add('hidden');
+                document.getElementById('pv-row-igst').classList.remove('hidden');
+            } else {
+                document.getElementById('pv-row-cgst').classList.add('hidden');
+                document.getElementById('pv-row-sgst').classList.add('hidden');
+                document.getElementById('pv-row-igst').classList.add('hidden');
+            }
+
+            // Update DOM Values
+            document.getElementById('pv-subtotal').textContent = formatCurrency(subtotal);
+            document.getElementById('pv-discount').textContent = `-${formatCurrency(discount)}`;
+            document.getElementById('pv-taxable').textContent = formatCurrency(taxable);
+            document.getElementById('pv-cgst').textContent = formatCurrency(cgst);
+            document.getElementById('pv-sgst').textContent = formatCurrency(sgst);
+            document.getElementById('pv-igst').textContent = formatCurrency(igst);
+            document.getElementById('pv-grandtotal').textContent = formatCurrency(grandTotal);
+            document.getElementById('pv-words').textContent = numberToWordsIndian(grandTotal);
+
+            // Receipt Specific Sync
+            if (docMode === 'receipt') {
+                const paidAmt = parseFloat(document.getElementById('cfg-paid-amount').value) || 0;
+                const payMode = document.getElementById('cfg-payment-mode').value;
+                const txnRef = document.getElementById('cfg-txn-ref').value;
+                const balanceDue = Math.max(0, grandTotal - paidAmt);
+
+                document.getElementById('pv-receipt-amount-display').textContent = formatCurrency(paidAmt);
+                document.getElementById('pv-receipt-mode-display').textContent = payMode;
+                document.getElementById('pv-receipt-ref-display').textContent = txnRef || '--';
+                
+                document.getElementById('pv-receipt-paid-display').textContent = formatCurrency(paidAmt);
+                document.getElementById('pv-receipt-due-display').textContent = formatCurrency(balanceDue);
+            }
+        }
+
+        // Helpers
+        function formatCurrency(num) {
+            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(num);
+        }
+
+        function numberToWordsIndian(num) {
+            if (num === 0) return "Rupees Zero Only";
+            const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+            const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            const inWords = (n) => {
+                let str = '';
+                if (n > 99) { str += a[Math.floor(n / 100)] + "Hundred "; n %= 100; }
+                if (n > 19) { str += b[Math.floor(n / 10)] + " "; n %= 10; }
+                if (n > 0) str += a[n];
+                return str;
+            };
+
+            let crore = Math.floor(num / 10000000); num %= 10000000;
+            let lakh = Math.floor(num / 100000); num %= 100000;
+            let thousand = Math.floor(num / 1000); num %= 1000;
+            let remainder = Math.floor(num);
+
+            let res = '';
+            if (crore > 0) res += inWords(crore) + "Crore ";
+            if (lakh > 0) res += inWords(lakh) + "Lakh ";
+            if (thousand > 0) res += inWords(thousand) + "Thousand ";
+            if (remainder > 0) res += inWords(remainder);
+            return "Rupees " + res.trim() + " Only";
+        }
+
+        // PDF Export Engine
+        function exportToPDF() {
+            const element = document.getElementById('quotation-print-sheet');
+            const refNo = document.getElementById('cfg-quote-no').value || 'Dadodec_Doc';
+            
+            // Temporary fix for PDF generation scale
+            element.style.transform = 'none';
+            element.style.width = '210mm';
+            element.style.margin = '0';
+            
+            const opt = {
+                margin:       [10, 5, 10, 5],
+                filename:     `${refNo.replace(/\//g, '_')}_${docMode.toUpperCase()}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                // Restore styles after export
+                element.style.transform = '';
+                element.style.width = '';
+                element.style.margin = '';
+            });
+        }
+    </script>
+</body>
+</html>
