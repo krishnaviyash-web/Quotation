@@ -3,20 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dadodec - Document Generator</title>
-    
-    <!-- Google Fonts: Cinzel & Poppins -->
+    <title>Dadodec Interior Quotation Generator</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- html2pdf.js CDN for PDF export -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
-    <!-- Phosphor Icons for SaaS look -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <script>
@@ -24,945 +18,955 @@
             theme: {
                 extend: {
                     colors: {
-                        gold: {
-                            50: '#fbf9ee',
-                            100: '#f6efd0',
-                            200: '#eddca1',
-                            400: '#dfba55',
-                            500: '#d4af37',
-                            600: '#b5902a',
-                            700: '#8c6b1c',
-                            800: '#634b15',
-                            900: '#433210',
-                        },
-                        slate: {
-                            850: '#131e32',
-                            900: '#0f172a',
-                            950: '#080d1a',
-                        }
+                        gold: { 50:'#fbf9ee',100:'#f6efd0',200:'#eddca1',400:'#dfba55',500:'#d4af37',600:'#b5902a',700:'#8c6b1c',800:'#634b15',900:'#433210' },
+                        slate: { 850:'#131e32',900:'#0f172a',950:'#080d1a' }
                     },
-                    fontFamily: {
-                        sans: ['Poppins', 'sans-serif'],
-                        serif: ['Cinzel', 'serif']
-                    }
+                    fontFamily: { sans:['Poppins','sans-serif'], serif:['Cinzel','serif'] }
                 }
             }
         }
     </script>
+
     <style>
-        /* SaaS UI Styles */
-        body { background-color: #f8fafc; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        body { background: #f1f5f9; color: #1e293b; font-family: 'Poppins', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* A4 Document Styling */
-        .document-wrapper {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-        }
+        .gold-text { background: linear-gradient(135deg, #d4af37 0%, #dfba55 50%, #b5902a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .document-sheet {
-            width: 210mm;
-            min-height: 297mm;
-            background-color: #ffffff;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            position: relative;
-            margin: 0 auto;
-            padding: 12mm 15mm;
-            flex-shrink: 0;
-            color: #1e293b;
-        }
+        .nav-btn { display: flex; align-items: center; width: 100%; padding: 12px 16px; border-radius: 10px; color: #94a3b8; font-weight: 500; font-size: 14px; transition: all 0.2s; }
+        .nav-btn:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-btn.active { background: rgba(212,175,55,0.15); color: #d4af37; font-weight: 600; }
+        
+        .form-label { display: block; font-size: 11px; font-weight: 600; color: #64748b; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .form-input { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; font-size: 13px; font-family: 'Poppins', sans-serif; transition: all 0.2s; outline: none; background: white; }
+        .form-input:focus { border-color: #d4af37; box-shadow: 0 0 0 3px rgba(212,175,55,0.1); }
+        
+        .btn-gold { background: linear-gradient(135deg, #d4af37 0%, #dfba55 50%, #b5902a 100%); color: #0f172a; font-weight: 700; transition: transform 0.2s, box-shadow 0.2s; }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(212,175,55,0.4); }
+        
+        .home-type-card { cursor: pointer; transition: all 0.2s; border: 2px solid #e2e8f0; border-radius: 12px; padding: 16px; text-align: center; background: white; }
+        .home-type-card:hover { border-color: #d4af37; transform: translateY(-2px); }
+        .home-type-card.selected { border-color: #d4af37; background: #fbf9ee; box-shadow: 0 10px 25px -5px rgba(212,175,55,0.2); }
+        .home-type-card.selected .icon-box { background: #d4af37; color: #0f172a; }
 
-        .document-watermark {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            font-family: 'Cinzel', serif;
-            font-size: 6rem;
-            font-weight: 800;
-            color: rgba(212, 175, 55, 0.03); /* Very subtle gold */
-            letter-spacing: 0.1em;
-            pointer-events: none;
-            user-select: none;
-            white-space: nowrap;
-            z-index: 0;
-        }
+        /* A4 Document Editor Styles */
+        .a4-sheet { width: 210mm; min-height: 297mm; background: white; margin: 0 auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); padding: 20mm; font-size: 11px; color: #1e293b; line-height: 1.6; }
+        .ce-field { outline: none; border-radius: 4px; border: 1px solid transparent; transition: all 0.2s; min-height: 1em; display: inline-block; min-width: 20px; }
+        .ce-field:hover { background: #f8fafc; border-color: #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); cursor: text; }
+        .ce-field:focus { background: white; border-color: #d4af37; box-shadow: 0 0 0 2px rgba(212,175,55,0.2); }
+        
+        .doc-table th { background: #0f172a; color: #d4af37; padding: 10px 12px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; text-align: left; }
+        .doc-table td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 11px; }
 
-        .doc-content {
-            position: relative;
-            z-index: 10;
-        }
-
-        /* Clean Table Styles for PDF */
-        .pdf-table th {
-            background-color: #f1f5f9;
-            color: #334155;
-            text-transform: uppercase;
-            font-size: 0.65rem;
-            letter-spacing: 0.05em;
-            padding: 8px;
-            border-bottom: 2px solid #cbd5e1;
-        }
-        .pdf-table td {
-            padding: 8px;
-            font-size: 0.75rem;
-            border-bottom: 1px solid #e2e8f0;
-            vertical-align: top;
-        }
-        .pdf-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Responsive Scaling for Preview */
-        @media (max-width: 1280px) {
-            .document-sheet {
-                transform: scale(0.85);
-                transform-origin: top center;
-                margin-bottom: -15%;
-            }
-        }
-        @media (max-width: 1024px) {
-            .document-sheet {
-                transform: scale(0.7);
-                margin-bottom: -30%;
-            }
-        }
-
-        /* Print CSS Rules */
         @media print {
             body * { visibility: hidden; }
+            #view-editor, #print-wrap, #print-wrap * { visibility: visible; }
+            #print-wrap { position: absolute; left: 0; top: 0; margin: 0; padding: 0; box-shadow: none; width: 100%; }
+            .a4-sheet { box-shadow: none; margin: 0; padding: 15mm; }
+            .ce-field { border: none !important; background: transparent !important; box-shadow: none !important; }
             .no-print { display: none !important; }
-            #view-editor { display: block !important; }
-            .document-sheet, .document-sheet * { visibility: visible; }
-            .document-sheet {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100% !important;
-                margin: 0 !important;
-                padding: 10mm 15mm !important;
-                box-shadow: none !important;
-                transform: none !important;
-            }
         }
+
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: #0f172a; color: #d4af37; padding: 12px 24px; border-radius: 99px; font-size: 13px; font-weight: 600; opacity: 0; transition: all 0.3s; z-index: 9999; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden text-slate-800 font-sans antialiased">
+<body class="flex h-screen overflow-hidden text-slate-800">
 
-    <!-- Sidebar Navigation -->
-    <aside class="w-20 lg:w-64 bg-slate-900 text-slate-300 flex flex-col transition-all duration-300 z-30 shadow-xl no-print">
-        <!-- Logo Area -->
-        <div class="h-16 flex items-center justify-center lg:justify-start lg:px-6 border-b border-slate-800">
-            <div class="w-8 h-8 bg-gold-500 rounded flex items-center justify-center text-slate-900 font-serif font-bold text-lg shadow-sm">D</div>
-            <span class="hidden lg:block ml-3 font-serif font-bold text-white tracking-wider text-sm">DADODEC</span>
+    <!-- SIDEBAR -->
+    <aside class="no-print w-64 bg-slate-900 text-slate-300 flex flex-col z-30 shadow-2xl shrink-0">
+        <div class="h-16 flex items-center px-6 border-b border-slate-800">
+            <div class="w-8 h-8 bg-gold-500 rounded flex items-center justify-center text-slate-900 font-serif font-extrabold text-lg mr-3">D</div>
+            <div>
+                <div class="font-serif font-bold text-white tracking-widest text-sm uppercase">Dadodec</div>
+                <div class="text-[10px] text-slate-500 font-medium">Quotation System</div>
+            </div>
         </div>
-
-        <!-- Menu -->
-        <nav class="flex-1 py-6 space-y-2 px-3">
-            <button onclick="switchView('editor')" id="nav-editor" class="w-full flex items-center p-3 rounded-lg bg-gold-500/10 text-gold-400 font-medium transition-colors group">
-                <i class="ph ph-file-text text-xl"></i>
-                <span class="hidden lg:block ml-3 text-sm">Create Document</span>
+        <nav class="flex-1 py-6 px-3 space-y-2">
+            <button onclick="switchView('dashboard')" id="nav-dashboard" class="nav-btn active">
+                <i class="ph ph-layout text-xl mr-3"></i> Dashboard
             </button>
-            <button onclick="switchView('settings')" id="nav-settings" class="w-full flex items-center p-3 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white font-medium transition-colors group">
-                <i class="ph ph-gear text-xl"></i>
-                <span class="hidden lg:block ml-3 text-sm">Settings & Assets</span>
+            <button onclick="startNewQuotation()" id="nav-wizard" class="nav-btn">
+                <i class="ph ph-plus-circle text-xl mr-3"></i> New Quotation
+            </button>
+            <button onclick="switchView('settings')" id="nav-settings" class="nav-btn">
+                <i class="ph ph-gear text-xl mr-3"></i> Settings
             </button>
         </nav>
-
-        <div class="p-4 border-t border-slate-800 text-center lg:text-left">
-            <div class="w-8 h-8 rounded-full bg-slate-700 mx-auto lg:mx-0 flex items-center justify-center text-xs font-bold text-white">AD</div>
-            <div class="hidden lg:block mt-2">
-                <div class="text-xs font-bold text-white">Admin User</div>
-                <div class="text-[10px] text-slate-500">Dadodec Interiors</div>
-            </div>
-        </div>
     </aside>
 
-    <!-- Main Workspace -->
+    <!-- MAIN AREA -->
     <main class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 relative">
         
-        <!-- Top App Bar -->
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-20 shadow-sm no-print">
-            <div class="flex items-center space-x-2">
-                <h1 id="topbar-title" class="font-bold text-slate-800 text-lg">Create Document</h1>
-                <span id="topbar-subtitle" class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded font-medium ml-2">Editor</span>
-            </div>
-            
-            <div class="flex items-center space-x-3" id="topbar-actions">
-                <button onclick="window.print()" class="hidden md:flex items-center px-3 py-1.5 bg-white border border-slate-300 text-slate-600 rounded text-xs font-semibold hover:bg-slate-50 transition">
-                    <i class="ph ph-printer mr-1.5 text-base"></i> Print
-                </button>
-                <button onclick="exportToPDF()" class="flex items-center px-4 py-2 bg-slate-900 text-gold-400 rounded-md text-sm font-bold shadow-md hover:bg-slate-800 transition transform hover:-translate-y-0.5">
-                    <i class="ph ph-download-simple mr-2 text-lg"></i> Download PDF
-                </button>
-            </div>
+        <!-- Topbar -->
+        <header class="no-print h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0 z-20">
+            <h1 id="topbar-title" class="font-bold text-lg text-slate-800 font-serif">Dashboard</h1>
+            <div id="topbar-actions"></div>
         </header>
 
-        <!-- Content Area -->
-        <div class="flex-1 overflow-y-auto relative w-full h-full custom-scrollbar">
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto" id="main-scroll">
             
-            <!-- ================= VIEW: SETTINGS ================= -->
-            <div id="view-settings" class="hidden p-6 lg:p-10 max-w-4xl mx-auto pb-24">
+            <!-- VIEW: DASHBOARD -->
+            <div id="view-dashboard" class="p-8 max-w-6xl mx-auto">
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <h2 class="text-2xl font-serif font-bold text-slate-900">Quotation History</h2>
+                        <p class="text-slate-500 text-sm mt-1">Manage and track all generated quotations.</p>
+                    </div>
+                    <button onclick="startNewQuotation()" class="btn-gold px-5 py-2.5 rounded-lg text-sm flex items-center gap-2">
+                        <i class="ph ph-plus font-bold"></i> Create Quotation
+                    </button>
+                </div>
+                
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-50 border-b border-slate-200">
+                            <tr>
+                                <th class="text-left px-6 py-4 font-bold text-slate-500 text-xs uppercase tracking-wider">Quote ID</th>
+                                <th class="text-left px-6 py-4 font-bold text-slate-500 text-xs uppercase tracking-wider">Client</th>
+                                <th class="text-left px-6 py-4 font-bold text-slate-500 text-xs uppercase tracking-wider">Date</th>
+                                <th class="text-left px-6 py-4 font-bold text-slate-500 text-xs uppercase tracking-wider">Amount</th>
+                                <th class="text-left px-6 py-4 font-bold text-slate-500 text-xs uppercase tracking-wider">Status</th>
+                                <th class="text-right px-6 py-4 font-bold text-slate-500 text-xs uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dash-table-body" class="divide-y divide-slate-100">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- VIEW: WIZARD (Calculator) -->
+            <div id="view-wizard" class="hidden p-8 max-w-4xl mx-auto pb-24">
                 <div class="mb-8">
-                    <h2 class="text-2xl font-serif font-bold text-slate-900">Company Settings & Assets</h2>
-                    <p class="text-slate-500 text-sm mt-1">Configure your default company details, logo, and document terms. These will be automatically applied to all new documents.</p>
+                    <h2 class="text-3xl font-serif font-bold text-slate-900">Interior Cost Calculator</h2>
+                    <p class="text-slate-500 mt-2">Enter the property details to automatically calculate costs and prepare the quotation document.</p>
                 </div>
 
-                <div class="space-y-6">
-                    <!-- Branding Section -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center">
-                            <i class="ph ph-palette text-slate-500 mr-2 text-lg"></i>
-                            <h3 class="font-semibold text-slate-800 text-sm">Branding & Logo</h3>
+                <!-- Step 1: Details -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-gold-500 text-slate-900 flex items-center justify-center text-xs">1</span>
+                        Client &amp; Property Details
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                        <div><label class="form-label">Client Name *</label><input type="text" id="wiz-name" class="form-input" placeholder="e.g. Mr. Rahul Sharma" oninput="checkWizard()"></div>
+                        <div><label class="form-label">Phone Number *</label><input type="text" id="wiz-phone" class="form-input" placeholder="+91 98XXX XXXXX" oninput="checkWizard()"></div>
+                        <div><label class="form-label">Email Address</label><input type="email" id="wiz-email" class="form-input" placeholder="client@email.com"></div>
+                        <div><label class="form-label">Project Location *</label><input type="text" id="wiz-location" class="form-input" placeholder="e.g. Whitefield, Bangalore" oninput="checkWizard()"></div>
+                    </div>
+
+                    <label class="form-label mb-3">Select Property Type *</label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="wiz-property-grid">
+                        <!-- JS injects property cards here -->
+                    </div>
+                </div>
+
+                <!-- Step 2: Area & Cost -->
+                <div id="wizard-step-2" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-6 opacity-50 pointer-events-none transition-opacity">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-gold-500 text-slate-900 flex items-center justify-center text-xs">2</span>
+                        Area &amp; Cost Calculation
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div>
+                            <label class="form-label">Total Area (sq.ft) *</label>
+                            <input type="number" id="wiz-total-area" class="form-input font-bold text-lg" placeholder="e.g. 1200" oninput="calculateCosts()">
                         </div>
-                        <div class="p-5">
-                            <div class="flex items-start space-x-6">
-                                <div class="w-32 h-32 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 relative overflow-hidden group">
-                                    <img id="settings-logo-preview" src="" class="hidden w-full h-full object-contain p-2" alt="Logo Preview">
-                                    <div id="settings-logo-placeholder" class="text-center text-slate-400">
-                                        <i class="ph ph-image text-3xl mb-1"></i>
-                                        <div class="text-[10px] uppercase font-bold">No Logo</div>
-                                    </div>
-                                    <label class="absolute inset-0 bg-slate-900/60 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity text-xs font-semibold">
-                                        Upload
-                                        <input type="file" id="settings-logo-upload" accept="image/*" onchange="handleSettingsLogoUpload(event)" class="hidden">
-                                    </label>
+                        <div>
+                            <label class="form-label">Area Split Mode</label>
+                            <select id="wiz-split-mode" class="form-input" onchange="calculateCosts()">
+                                <option value="auto">Auto (80% Dry / 20% Wet)</option>
+                                <option value="custom">Custom Manual Split</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- Dry Area -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="form-label !mb-0 text-slate-700">Dry Area (sq.ft)</label>
+                                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">@ ₹<span id="lbl-rate-dry">1249</span>/sqft</span>
                                 </div>
-                                <div class="flex-1">
-                                    <p class="text-xs text-slate-500 mb-3">Upload a high-resolution logo (PNG/JPG). It will appear on the top left of all your documents. To remove the logo, clear the application data.</p>
-                                    <button onclick="document.getElementById('settings-logo-upload').click()" class="px-3 py-1.5 bg-slate-100 border border-slate-300 text-slate-700 rounded text-xs font-semibold hover:bg-slate-200 transition">
-                                        Choose Image
-                                    </button>
+                                <input type="number" id="wiz-dry-area" class="form-input mb-2 bg-white" readonly oninput="calculateCosts(true)">
+                                <div class="text-right text-sm font-semibold text-slate-600" id="wiz-dry-cost">₹0</div>
+                            </div>
+                            <!-- Wet Area -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="form-label !mb-0 text-slate-700">Wet Area (sq.ft)</label>
+                                    <span class="text-[10px] font-bold text-sky-600 bg-sky-50 px-2 py-1 rounded">@ ₹<span id="lbl-rate-wet">1349</span>/sqft</span>
                                 </div>
+                                <input type="number" id="wiz-wet-area" class="form-input mb-2 bg-white" readonly oninput="calculateCosts(true)">
+                                <div class="text-right text-sm font-semibold text-slate-600" id="wiz-wet-cost">₹0</div>
                             </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-6 border-t border-slate-200 flex justify-between items-center">
+                            <div class="text-slate-500 font-bold uppercase tracking-wider text-sm">Total Estimated Cost</div>
+                            <div class="font-serif font-black text-3xl gold-text" id="wiz-total-cost">₹0</div>
                         </div>
                     </div>
 
-                    <!-- Company Details -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center">
-                            <i class="ph ph-buildings text-slate-500 mr-2 text-lg"></i>
-                            <h3 class="font-semibold text-slate-800 text-sm">Company Details</h3>
-                        </div>
-                        <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">Registered Company Name</label>
-                                <input type="text" id="set-company-name" class="w-full bg-white border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none transition">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">GSTIN Number</label>
-                                <input type="text" id="set-company-gstin" class="w-full bg-white border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none transition">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">Full Address & Contact String</label>
-                                <input type="text" id="set-company-addr" class="w-full bg-white border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none transition">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Financial & Defaults -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div class="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center">
-                            <i class="ph ph-bank text-slate-500 mr-2 text-lg"></i>
-                            <h3 class="font-semibold text-slate-800 text-sm">Financials & Defaults</h3>
-                        </div>
-                        <div class="p-5 space-y-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">Default Bank Account Details (NEFT/RTGS)</label>
-                                <input type="text" id="set-bank-details" class="w-full bg-white border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none transition">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">Default Payment Schedule / Terms</label>
-                                <textarea id="set-payment-terms" rows="2" class="w-full bg-white border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none transition"></textarea>
-                            </div>
-                            <div class="w-1/2">
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">Default Tax Category</label>
-                                <select id="set-tax-mode" class="w-full bg-white border border-slate-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-gold-500 focus:border-gold-500 outline-none transition">
-                                    <option value="intra">Intrastate (9% CGST + 9% SGST)</option>
-                                    <option value="inter">Interstate (18% IGST)</option>
-                                    <option value="none">Exempt / No Tax (0%)</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Save Action -->
-                    <div class="flex justify-end pt-2">
-                        <button onclick="saveSettings()" class="flex items-center px-6 py-2.5 bg-gold-500 text-slate-900 rounded-md text-sm font-bold shadow hover:bg-gold-600 transition">
-                            <i class="ph ph-floppy-disk mr-2 text-lg"></i> Save Configuration
+                    <div class="mt-8 text-right">
+                        <button id="btn-generate-doc" onclick="prepareDocument()" class="btn-gold px-8 py-3.5 rounded-xl font-bold shadow-lg flex items-center gap-2 ml-auto" disabled>
+                            Calculate &amp; Prepare Document <i class="ph ph-arrow-right text-xl"></i>
                         </button>
                     </div>
                 </div>
             </div>
 
-
-            <!-- ================= VIEW: EDITOR ================= -->
-            <div id="view-editor" class="flex flex-col xl:flex-row h-full">
-                
-                <!-- LEFT PANEL: Controls (Scrollable) -->
-                <div class="w-full xl:w-5/12 bg-white border-r border-slate-200 h-auto xl:h-full overflow-y-auto custom-scrollbar p-6 no-print space-y-6 shrink-0 z-10 shadow-[4px_0_15px_-3px_rgba(0,0,0,0.05)]">
-                    
-                    <!-- Document Mode -->
+            <!-- VIEW: SETTINGS -->
+            <div id="view-settings" class="hidden p-8 max-w-4xl mx-auto pb-24">
+                <div class="mb-8 flex justify-between items-end">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Document Type</label>
-                        <div class="flex bg-slate-100 p-1 rounded-lg">
-                            <button id="btn-mode-quote" onclick="setDocumentMode('quote')" class="flex-1 py-1.5 text-xs font-bold rounded-md bg-white text-slate-800 shadow-sm transition">
-                                Quotation
-                            </button>
-                            <button id="btn-mode-receipt" onclick="setDocumentMode('receipt')" class="flex-1 py-1.5 text-xs font-bold rounded-md text-slate-500 hover:text-slate-800 transition">
-                                Receipt
-                            </button>
-                        </div>
+                        <h2 class="text-2xl font-serif font-bold text-slate-900">System Settings</h2>
+                        <p class="text-slate-500 text-sm mt-1">Configure company profile, bank details, and fixed pricing rates.</p>
                     </div>
-
-                    <!-- Client Details Form -->
-                    <div class="space-y-3 border-t border-slate-100 pt-4">
-                        <div class="flex justify-between items-center mb-1">
-                            <h3 class="text-sm font-bold text-slate-800">Client Info</h3>
-                            <div class="text-[10px] text-slate-400">Ref: <input type="text" id="cfg-quote-no" value="DDI/2026/089" oninput="updatePreview()" class="w-24 bg-transparent border-b border-slate-300 text-slate-800 focus:outline-none"></div>
-                        </div>
-                        
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[10px] font-semibold text-slate-500 mb-1">Client Name</label>
-                                <input type="text" id="cfg-client-name" value="Mr. Sunil Sharma" oninput="updatePreview()" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs focus:ring-1 focus:ring-gold-500 focus:border-gold-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-semibold text-slate-500 mb-1">Phone</label>
-                                <input type="text" id="cfg-client-phone" value="+91 99000 12345" oninput="updatePreview()" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs focus:ring-1 focus:ring-gold-500 focus:border-gold-500 outline-none">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-semibold text-slate-500 mb-1">Project Site Address</label>
-                            <input type="text" id="cfg-site-address" value="Flat 402, Prestige Lakeside, Whitefield, Bengaluru" oninput="updatePreview()" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs focus:ring-1 focus:ring-gold-500 focus:border-gold-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-semibold text-slate-500 mb-1">Document Date</label>
-                            <input type="date" id="cfg-quote-date" onchange="updatePreview()" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs focus:ring-1 focus:ring-gold-500 focus:border-gold-500 outline-none">
-                        </div>
-                    </div>
-
-                    <!-- Receipt Specific Form -->
-                    <div id="receipt-inputs-panel" class="hidden space-y-3 border-t border-slate-100 pt-4 bg-emerald-50/50 p-3 rounded-lg border border-emerald-100">
-                        <h3 class="text-sm font-bold text-emerald-800 mb-1">Payment Received</h3>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-[10px] font-semibold text-emerald-700 mb-1">Amount Paid (₹)</label>
-                                <input type="number" id="cfg-paid-amount" value="250000" min="0" step="5000" oninput="updatePreview()" class="w-full bg-white border border-emerald-300 rounded p-2 font-bold text-emerald-900 text-xs focus:ring-1 focus:ring-emerald-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-semibold text-emerald-700 mb-1">Payment Mode</label>
-                                <select id="cfg-payment-mode" onchange="updatePreview()" class="w-full bg-white border border-emerald-300 rounded p-2 text-xs focus:ring-1 focus:ring-emerald-500 outline-none">
-                                    <option value="NEFT / Bank Transfer">NEFT / Bank</option>
-                                    <option value="UPI / GPay">UPI / GPay</option>
-                                    <option value="Cheque">Cheque</option>
-                                    <option value="Cash">Cash</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-semibold text-emerald-700 mb-1">Txn Ref / Cheque No.</label>
-                            <input type="text" id="cfg-txn-ref" value="UTIB00012903812" oninput="updatePreview()" class="w-full bg-white border border-emerald-300 rounded p-2 text-xs focus:ring-1 focus:ring-emerald-500 outline-none">
-                        </div>
-                    </div>
-
-                    <!-- Line Items Builder -->
-                    <div class="border-t border-slate-100 pt-4">
-                        <div class="flex justify-between items-center mb-3">
-                            <h3 class="text-sm font-bold text-slate-800">Line Items</h3>
-                            <button onclick="addNewLineItem()" class="text-xs bg-slate-900 text-gold-400 font-semibold px-2.5 py-1 rounded hover:bg-slate-800 transition">
-                                + Add Item
-                            </button>
-                        </div>
-                        
-                        <div id="items-builder-container" class="space-y-3">
-                            <!-- JS Injected Items -->
-                        </div>
-                    </div>
-
-                    <!-- Discount & Overrides -->
-                    <div class="border-t border-slate-100 pt-4 pb-10">
-                        <h3 class="text-sm font-bold text-slate-800 mb-3">Discount</h3>
-                        <div class="w-1/2">
-                            <label class="block text-[10px] font-semibold text-slate-500 mb-1">Flat Discount (₹)</label>
-                            <input type="number" id="cfg-discount" value="15000" min="0" step="1000" oninput="updatePreview()" class="w-full bg-slate-50 border border-slate-200 rounded p-2 text-xs focus:ring-1 focus:ring-gold-500 focus:border-gold-500 outline-none">
-                        </div>
-                    </div>
-
+                    <button onclick="saveSettings()" class="btn-gold px-6 py-2.5 rounded-lg text-sm flex items-center gap-2">
+                        <i class="ph ph-floppy-disk text-lg"></i> Save Settings
+                    </button>
                 </div>
 
-                <!-- RIGHT PANEL: Document Preview (Scrollable container for A4 sheet) -->
-                <div class="w-full xl:w-7/12 bg-slate-200/60 overflow-y-auto p-4 lg:p-10 custom-scrollbar flex justify-center">
-                    
-                    <div class="document-wrapper">
-                        <!-- THE A4 PRINT SHEET -->
-                        <div id="quotation-print-sheet" class="document-sheet">
-                            
-                            <!-- Subtle Watermark -->
-                            <div class="document-watermark">DADODEC</div>
-
-                            <div class="doc-content h-full flex flex-col">
-                                
-                                <!-- Document Header -->
-                                <div class="flex justify-between items-start border-b-2 border-slate-900 pb-5 mb-5">
-                                    <div class="flex items-start gap-4">
-                                        <div id="pv-logo-container" class="w-16 h-16 flex items-center justify-center bg-slate-900 rounded-lg text-gold-400 font-serif font-extrabold text-3xl shrink-0">D</div>
-                                        <div>
-                                            <h1 id="pv-company-name" class="font-serif font-bold text-2xl text-slate-900 tracking-wide uppercase">Dadodec Interiors</h1>
-                                            <p id="pv-company-addr" class="text-[10px] text-slate-500 mt-1 max-w-[250px] leading-relaxed">123 Design Avenue, Indiranagar, Bengaluru, Karnataka | +91 98765 43210</p>
-                                            <p class="text-[10px] text-slate-700 font-semibold mt-0.5">GSTIN: <span id="pv-company-gstin">29AABCD1234E1Z5</span></p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="text-right">
-                                        <div id="pv-doc-type" class="text-xl font-serif font-bold text-gold-700 uppercase tracking-widest mb-2">Quotation</div>
-                                        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-700 text-left w-48 ml-auto">
-                                            <span class="font-semibold text-right">Date:</span>
-                                            <span id="pv-quote-date">--</span>
-                                            
-                                            <span class="font-semibold text-right">Ref No:</span>
-                                            <span id="pv-quote-no" class="font-medium">--</span>
-                                            
-                                            <span id="pv-validity-lbl" class="font-semibold text-right">Validity:</span>
-                                            <span id="pv-validity-val" class="font-medium">30 Days</span>
-                                        </div>
-                                    </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Company Info -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm md:col-span-2">
+                        <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-5 border-b border-slate-100 pb-2">Company Profile</h3>
+                        
+                        <div class="flex items-start gap-6 mb-6">
+                            <div class="w-32 h-32 border-2 border-dashed border-slate-300 rounded-lg bg-slate-50 flex items-center justify-center relative group overflow-hidden">
+                                <img id="set-logo-preview" src="" class="hidden max-w-full max-h-full p-2 object-contain">
+                                <div id="set-logo-placeholder" class="text-center text-slate-400">
+                                    <i class="ph ph-image text-3xl mb-1"></i><div class="text-[10px] font-bold">LOGO</div>
                                 </div>
-
-                                <!-- Entities Info -->
-                                <div class="grid grid-cols-2 gap-8 mb-6">
-                                    <!-- Bill To -->
-                                    <div class="bg-slate-50 p-4 rounded border border-slate-200">
-                                        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Billed To</h4>
-                                        <div id="pv-client-name" class="font-bold text-slate-900 text-sm mb-1">Mr. Client Name</div>
-                                        <div id="pv-client-phone" class="text-xs text-slate-600 mb-1">+91 00000 00000</div>
-                                    </div>
-                                    <!-- Project Site -->
-                                    <div class="bg-slate-50 p-4 rounded border border-slate-200">
-                                        <h4 class="text-[10px] font-bold uppercase text-slate-400 tracking-wider mb-2">Project Site</h4>
-                                        <div id="pv-site-address" class="text-xs text-slate-800 leading-relaxed">Site Address Here</div>
-                                    </div>
+                                <label class="absolute inset-0 bg-slate-900/50 flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 cursor-pointer transition">
+                                    Upload <input type="file" class="hidden" accept="image/*" onchange="handleLogoUpload(event)">
+                                </label>
+                            </div>
+                            <div class="flex-1 space-y-4">
+                                <div><label class="form-label">Company Name</label><input type="text" id="set-company" class="form-input"></div>
+                                <div><label class="form-label">GSTIN</label><input type="text" id="set-gstin" class="form-input"></div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label class="form-label">Email</label><input type="email" id="set-email" class="form-input"></div>
+                                    <div><label class="form-label">Phone</label><input type="text" id="set-phone" class="form-input"></div>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="md:col-span-2"><label class="form-label">Full Office Address</label><input type="text" id="set-location" class="form-input"></div>
+                            <div><label class="form-label">Website</label><input type="text" id="set-website" class="form-input"></div>
+                            <div><label class="form-label">Warranty Text</label><input type="text" id="set-warranty" class="form-input"></div>
+                            <div><label class="form-label">Validity Label</label><input type="text" id="set-validity" class="form-input"></div>
+                        </div>
+                    </div>
 
-                                <!-- Receipt Banner (Dynamic) -->
-                                <div id="pv-receipt-banner" class="hidden mb-6 bg-emerald-50 border border-emerald-200 rounded p-4 grid grid-cols-3 gap-4 text-center">
-                                    <div class="border-r border-emerald-200/60">
-                                        <span class="text-[9px] font-bold uppercase text-emerald-600 tracking-wider block mb-1">Amount Received</span>
-                                        <span id="pv-receipt-amount-display" class="font-bold text-lg text-emerald-700">₹ 0.00</span>
-                                    </div>
-                                    <div class="border-r border-emerald-200/60">
-                                        <span class="text-[9px] font-bold uppercase text-emerald-600 tracking-wider block mb-1">Payment Mode</span>
-                                        <span id="pv-receipt-mode-display" class="font-semibold text-slate-800 text-sm">--</span>
-                                    </div>
-                                    <div>
-                                        <span class="text-[9px] font-bold uppercase text-emerald-600 tracking-wider block mb-1">Txn Ref / Cheque</span>
-                                        <span id="pv-receipt-ref-display" class="font-semibold text-slate-800 text-sm">--</span>
-                                    </div>
-                                </div>
+                    <!-- Fixed Pricing -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-5 border-b border-slate-100 pb-2">Fixed Pricing Rates</h3>
+                        <p class="text-xs text-slate-500 mb-4">Set the permanent calculation rates for dry and wet areas.</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="form-label">Dry Area Rate (₹ / sq.ft)</label>
+                                <input type="number" id="set-rate-dry" class="form-input font-bold text-emerald-700 bg-emerald-50 border-emerald-200">
+                            </div>
+                            <div>
+                                <label class="form-label">Wet Area Rate (₹ / sq.ft)</label>
+                                <input type="number" id="set-rate-wet" class="form-input font-bold text-sky-700 bg-sky-50 border-sky-200">
+                            </div>
+                        </div>
+                    </div>
 
-                                <!-- Items Table -->
-                                <div class="flex-grow">
-                                    <table class="w-full text-left pdf-table border-collapse">
-                                        <thead>
-                                            <tr>
-                                                <th class="w-8 text-center rounded-tl">#</th>
-                                                <th class="w-32">Room / Area</th>
-                                                <th>Description</th>
-                                                <th class="w-20 text-center">Qty</th>
-                                                <th class="w-24 text-right">Rate</th>
-                                                <th class="w-28 text-right rounded-tr">Amount</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="pv-items-table-body">
-                                            <!-- Dynamically populated rows -->
-                                        </tbody>
-                                    </table>
-                                </div>
+                    <!-- Bank Details -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-5 border-b border-slate-100 pb-2">Bank Details</h3>
+                        <div class="space-y-4">
+                            <div><label class="form-label">Account Holder Name</label><input type="text" id="set-bank-accname" class="form-input"></div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="form-label">Bank Name</label><input type="text" id="set-bank-name" class="form-input"></div>
+                                <div><label class="form-label">Account Number</label><input type="text" id="set-bank-accno" class="form-input"></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="form-label">IFSC Code</label><input type="text" id="set-bank-ifsc" class="form-input"></div>
+                                <div><label class="form-label">UPI ID</label><input type="text" id="set-bank-upi" class="form-input"></div>
+                            </div>
+                        </div>
+                    </div>
 
-                                <!-- Financial Totals & Terms -->
-                                <div class="mt-6 flex justify-between items-start pt-4 border-t-2 border-slate-800">
-                                    
-                                    <!-- Left: Terms & Words -->
-                                    <div class="w-7/12 pr-6">
-                                        <div class="mb-4">
-                                            <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-1">Total Amount in Words</span>
-                                            <span id="pv-words" class="text-xs font-semibold text-slate-800 italic">Rupees Zero Only</span>
-                                        </div>
-                                        <div class="mb-4">
-                                            <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-1">Payment Schedule</span>
-                                            <p id="pv-payment-terms" class="text-[10px] text-slate-600 leading-relaxed bg-slate-50 p-2 rounded border border-slate-100">
-                                                --
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-1">Bank Details (NEFT/RTGS)</span>
-                                            <p id="pv-bank-details" class="text-[10px] text-slate-600 leading-relaxed bg-slate-50 p-2 rounded border border-slate-100">
-                                                --
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <!-- Right: Calculations -->
-                                    <div class="w-5/12 bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs">
-                                        <div class="flex justify-between mb-2 pb-2 border-b border-slate-200">
-                                            <span class="text-slate-600">Subtotal:</span>
-                                            <span id="pv-subtotal" class="font-semibold text-slate-800">₹ 0.00</span>
-                                        </div>
-                                        <div class="flex justify-between mb-2 pb-2 border-b border-slate-200">
-                                            <span class="text-slate-600">Discount:</span>
-                                            <span id="pv-discount" class="font-semibold text-rose-600">-₹ 0.00</span>
-                                        </div>
-                                        <div class="flex justify-between mb-2 font-medium">
-                                            <span class="text-slate-700">Taxable Value:</span>
-                                            <span id="pv-taxable" class="text-slate-800">₹ 0.00</span>
-                                        </div>
-                                        <div id="pv-row-cgst" class="flex justify-between mb-1">
-                                            <span class="text-slate-500">CGST (9%):</span>
-                                            <span id="pv-cgst" class="text-slate-700">₹ 0.00</span>
-                                        </div>
-                                        <div id="pv-row-sgst" class="flex justify-between mb-2 pb-2 border-b border-slate-200">
-                                            <span class="text-slate-500">SGST (9%):</span>
-                                            <span id="pv-sgst" class="text-slate-700">₹ 0.00</span>
-                                        </div>
-                                        <div id="pv-row-igst" class="hidden justify-between mb-2 pb-2 border-b border-slate-200">
-                                            <span class="text-slate-500">IGST (18%):</span>
-                                            <span id="pv-igst" class="text-slate-700">₹ 0.00</span>
-                                        </div>
-                                        <div class="flex justify-between items-center mt-2 pt-2 border-t-2 border-slate-800">
-                                            <span class="font-bold text-sm text-slate-900">Grand Total:</span>
-                                            <span id="pv-grandtotal" class="font-bold text-lg text-gold-600">₹ 0.00</span>
-                                        </div>
-
-                                        <!-- Receipt Balances -->
-                                        <div id="pv-receipt-due-row" class="hidden mt-3 pt-3 border-t border-slate-300">
-                                            <div class="flex justify-between mb-1">
-                                                <span class="font-semibold text-emerald-700">Amount Paid:</span>
-                                                <span id="pv-receipt-paid-display" class="font-bold text-emerald-700">₹ 0.00</span>
-                                            </div>
-                                            <div class="flex justify-between">
-                                                <span class="font-semibold text-rose-600">Balance Due:</span>
-                                                <span id="pv-receipt-due-display" class="font-bold text-rose-600">₹ 0.00</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                </div>
-
-                                <!-- Signature Footer -->
-                                <div class="mt-12 flex justify-end">
-                                    <div class="text-center w-48">
-                                        <div class="border-b border-slate-400 mb-2 h-10"></div>
-                                        <span class="text-[9px] font-bold uppercase text-slate-500 tracking-wider">Authorized Signatory</span>
-                                        <div class="text-[10px] text-slate-800 font-medium mt-0.5" id="pv-sig-company">Dadodec Interiors</div>
-                                    </div>
-                                </div>
-
+                    <!-- Terms & Payment -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm md:col-span-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-5 border-b border-slate-100 pb-2">Terms &amp; Conditions</h3>
+                                <textarea id="set-terms" class="form-input h-32 resize-y"></textarea>
+                            </div>
+                            <div>
+                                <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-5 border-b border-slate-100 pb-2">Payment Schedule</h3>
+                                <textarea id="set-payment" class="form-input h-32 resize-y"></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- VIEW: DOCUMENT EDITOR -->
+            <div id="view-editor" class="hidden pb-24 bg-slate-200 min-h-full py-10 relative">
+                
+                <!-- Floating Toolbar for Editor -->
+                <div class="no-print fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 rounded-full shadow-2xl px-6 py-3 flex items-center gap-4 z-40 border border-slate-700">
+                    <button onclick="switchView('wizard')" class="text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1 transition">
+                        <i class="ph ph-arrow-left"></i> Edit Data
+                    </button>
+                    <div class="w-px h-6 bg-slate-700"></div>
+                    <button onclick="saveQuotation('draft')" class="text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1 transition">
+                        <i class="ph ph-floppy-disk"></i> Save Draft
+                    </button>
+                    <button onclick="shareQuotation()" class="text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1 transition">
+                        <i class="ph ph-share-network"></i> Share
+                    </button>
+                    <button onclick="printPDF()" class="text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1 transition">
+                        <i class="ph ph-printer"></i> Print
+                    </button>
+                    <button onclick="generatePDF()" class="bg-gold-500 text-slate-900 hover:bg-gold-400 px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition shadow-[0_0_15px_rgba(212,175,55,0.4)] ml-2">
+                        <i class="ph ph-file-pdf text-base"></i> Generate PDF
+                    </button>
+                </div>
+
+                <div class="text-center no-print mb-6">
+                    <p class="text-slate-500 text-sm font-medium"><i class="ph ph-info mr-1"></i> You can click on any text inside the document below to make manual edits before generating the PDF.</p>
+                </div>
+
+                <!-- The A4 Sheet -->
+                <div id="print-wrap">
+                    <div id="print-sheet" class="a4-sheet relative flex flex-col">
+                        
+                        <!-- Header -->
+                        <div class="flex justify-between items-start border-b-2 border-gold-500 pb-5 mb-6">
+                            <div class="flex gap-4 items-center">
+                                <img id="doc-logo" class="max-h-16 object-contain hidden" src="">
+                                <div id="doc-logo-text" class="w-14 h-14 bg-slate-900 text-gold-500 rounded flex items-center justify-center font-serif font-black text-2xl hidden">D</div>
+                                <div>
+                                    <h1 class="text-xl font-serif font-bold text-slate-900 tracking-wide ce-field" id="doc-company-name" contenteditable="true">DADODEC INTERIORS</h1>
+                                    <p class="text-[9px] text-slate-600 mt-1 ce-field" id="doc-company-location" contenteditable="true"></p>
+                                    <p class="text-[9px] text-slate-600 mt-0.5 ce-field" id="doc-company-contact" contenteditable="true"></p>
+                                    <p class="text-[9px] font-semibold text-slate-700 mt-0.5 ce-field" id="doc-company-gstin" contenteditable="true"></p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <h2 class="text-2xl font-serif font-black text-gold-500 uppercase tracking-widest ce-field" contenteditable="true">QUOTATION</h2>
+                                <div class="mt-2 text-[9px] text-slate-600 space-y-0.5">
+                                    <p><span class="font-bold text-slate-800">Quotation No:</span> <span class="ce-field" id="doc-quote-no" contenteditable="true"></span></p>
+                                    <p><span class="font-bold text-slate-800">Date:</span> <span class="ce-field" id="doc-date" contenteditable="true"></span></p>
+                                    <p><span class="font-bold text-slate-800">Validity:</span> <span class="ce-field" id="doc-validity" contenteditable="true"></span></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Client Info & Project Site -->
+                        <div class="flex gap-4 mb-6">
+                            <div class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-4">
+                                <h3 class="text-[9px] font-bold uppercase text-gold-600 mb-2 tracking-widest">Billed To</h3>
+                                <p class="font-bold text-slate-800 text-sm ce-field block" id="doc-cust-name" contenteditable="true"></p>
+                                <p class="text-slate-600 text-[10px] mt-1 ce-field block" id="doc-cust-phone" contenteditable="true"></p>
+                                <p class="text-slate-600 text-[10px] ce-field block" id="doc-cust-email" contenteditable="true"></p>
+                            </div>
+                            <div class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-4">
+                                <h3 class="text-[9px] font-bold uppercase text-gold-600 mb-2 tracking-widest">Project Site</h3>
+                                <p class="font-bold text-slate-800 text-sm ce-field block" id="doc-prop-type" contenteditable="true"></p>
+                                <p class="text-slate-600 text-[10px] mt-1 font-semibold ce-field block" id="doc-total-area" contenteditable="true"></p>
+                                <p class="text-slate-600 text-[10px] ce-field block" id="doc-cust-location" contenteditable="true"></p>
+                            </div>
+                        </div>
+
+                        <!-- Quotation Item Table -->
+                        <div class="mb-6 border border-slate-200 rounded-lg overflow-hidden">
+                            <table class="w-full doc-table">
+                                <thead class="bg-slate-900 text-gold-400">
+                                    <tr>
+                                        <th class="w-1/4">Room / Area</th>
+                                        <th class="w-2/5">Description</th>
+                                        <th class="text-center">Qty</th>
+                                        <th class="text-right">Rate</th>
+                                        <th class="text-right">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-200">
+                                    <tr>
+                                        <td class="font-bold text-slate-800 ce-field align-top" contenteditable="true">Dry Area</td>
+                                        <td class="text-slate-600 ce-field text-[10px] align-top leading-relaxed" contenteditable="true">Complete interior execution for all dry zones including living, dining, and bedrooms as per finalized design.</td>
+                                        <td class="text-center text-slate-600 ce-field align-top" id="doc-tbl-dry-sqft" contenteditable="true"></td>
+                                        <td class="text-right text-slate-600 ce-field align-top" id="doc-tbl-dry-rate" contenteditable="true"></td>
+                                        <td class="text-right font-bold text-slate-800 ce-field align-top" id="doc-tbl-dry-amt" contenteditable="true"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold text-slate-800 ce-field align-top" contenteditable="true">Wet Area</td>
+                                        <td class="text-slate-600 ce-field text-[10px] align-top leading-relaxed" contenteditable="true">Complete interior execution for wet zones including kitchen and bathrooms with water-resistant materials.</td>
+                                        <td class="text-center text-slate-600 ce-field align-top" id="doc-tbl-wet-sqft" contenteditable="true"></td>
+                                        <td class="text-right text-slate-600 ce-field align-top" id="doc-tbl-wet-rate" contenteditable="true"></td>
+                                        <td class="text-right font-bold text-slate-800 ce-field align-top" id="doc-tbl-wet-amt" contenteditable="true"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Cost Summary -->
+                        <div class="flex justify-end mb-8">
+                            <div class="w-1/2">
+                                <table class="w-full text-[10px]">
+                                    <tr>
+                                        <td class="py-1 text-slate-600">Subtotal</td>
+                                        <td class="py-1 text-right font-bold text-slate-800 ce-field" id="doc-sum-subtotal" contenteditable="true"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-1 text-slate-600">Discount</td>
+                                        <td class="py-1 text-right font-bold text-slate-800 ce-field" id="doc-sum-discount" contenteditable="true">₹0</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-1 text-slate-600">Taxable Value</td>
+                                        <td class="py-1 text-right font-bold text-slate-800 ce-field" id="doc-sum-taxable" contenteditable="true"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-1 text-slate-600 ce-field" contenteditable="true">GST</td>
+                                        <td class="py-1 text-right font-bold text-slate-800 ce-field" id="doc-sum-gst" contenteditable="true">₹0</td>
+                                    </tr>
+                                    <tr class="border-t-2 border-slate-900">
+                                        <td class="py-3 font-bold uppercase tracking-widest text-slate-900 text-[11px]">Grand Total</td>
+                                        <td class="py-3 text-right font-serif font-black text-xl text-gold-600 ce-field bg-gold-50 px-2 rounded" id="doc-sum-total" contenteditable="true"></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Information Grid -->
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <!-- Bank Details -->
+                            <div>
+                                <h3 class="text-[9px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-200 pb-1">Bank Details (NEFT/RTGS)</h3>
+                                <div class="text-[9px] text-slate-600 space-y-1 bg-slate-50 border border-slate-200 rounded p-3">
+                                    <p><span class="text-slate-400 inline-block w-20">A/C Name:</span> <span id="doc-bank-accname" contenteditable="true" class="font-bold text-slate-800 ce-field"></span></p>
+                                    <p><span class="text-slate-400 inline-block w-20">Bank Name:</span> <span id="doc-bank-name" contenteditable="true" class="font-bold text-slate-800 ce-field"></span></p>
+                                    <p><span class="text-slate-400 inline-block w-20">A/C Number:</span> <span id="doc-bank-accno" contenteditable="true" class="font-bold text-slate-800 ce-field"></span></p>
+                                    <p><span class="text-slate-400 inline-block w-20">IFSC Code:</span> <span id="doc-bank-ifsc" contenteditable="true" class="font-bold text-slate-800 ce-field"></span></p>
+                                    <p><span class="text-slate-400 inline-block w-20">UPI:</span> <span id="doc-bank-upi" contenteditable="true" class="font-bold text-slate-800 ce-field"></span></p>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <!-- Warranty -->
+                                <div class="mb-4">
+                                    <h3 class="text-[9px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-200 pb-1">Warranty</h3>
+                                    <div class="bg-gold-50 border border-gold-200 rounded p-2.5 text-gold-800 text-[10px] font-bold flex items-center gap-2">
+                                        <i class="ph ph-shield-check text-lg text-gold-500"></i>
+                                        <span id="doc-warranty" contenteditable="true" class="ce-field"></span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Payment Schedule -->
+                                <div>
+                                    <h3 class="text-[9px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-200 pb-1">Payment Schedule</h3>
+                                    <div class="text-[9px] text-slate-600 whitespace-pre-wrap ce-field leading-relaxed p-2 bg-slate-50 border border-slate-200 rounded" id="doc-payment" contenteditable="true"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terms & Conditions -->
+                        <div>
+                            <h3 class="text-[9px] font-bold uppercase text-slate-400 mb-1 border-b border-slate-200 pb-1">Terms &amp; Conditions</h3>
+                            <div class="text-[8.5px] text-slate-500 whitespace-pre-wrap ce-field block leading-relaxed" id="doc-terms" contenteditable="true"></div>
+                        </div>
+
+                        <!-- Signature (Absolute Bottom Right of content area) -->
+                        <div class="absolute bottom-[25mm] right-[20mm] text-center">
+                            <div class="border-b border-slate-400 w-32 h-8 mb-1"></div>
+                            <p class="text-[8px] font-bold uppercase text-slate-500 tracking-wider">Authorised Signatory</p>
+                            <p class="text-[9px] font-serif font-bold text-slate-900 mt-0.5 ce-field" id="doc-sig-name" contenteditable="true"></p>
+                        </div>
+
+                        <!-- Professional Footer -->
+                        <div class="mt-auto pt-6">
+                            <div class="grid grid-cols-2 gap-4 text-[8px] text-slate-500 leading-relaxed mb-4">
+                                <div>
+                                    <span class="font-bold text-slate-700 uppercase">Manufacturing Unit:</span><br>
+                                    Sy No. 39/2 Cheemasandra, Post, Virgonagar, Chimasandra, Karnataka 560049
+                                </div>
+                                <div>
+                                    <span class="font-bold text-slate-700 uppercase">Experience Centre:</span><br>
+                                    Site No 452, 1st Floor, 17th Cross Rd, 4th Sector, HSR Layout, Bengaluru, Karnataka 560102
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center bg-slate-900 text-white px-4 py-2.5 rounded">
+                                <span class="font-semibold text-[9px]">Contact: 97427 75599 | 98804 45697</span>
+                                <span class="font-semibold text-[9px]">Email: info@dadodec.com</span>
+                                <span class="font-semibold text-[9px] text-gold-400">www.dadodec.com</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
-    <!-- JavaScript Application Logic -->
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
     <script>
-        // ---- APPLICATION STATE ----
-        let appSettings = {
-            companyName: 'Dadodec Interiors',
-            companyGstin: '29AABCD1234E1Z5',
-            companyAddr: '123 Design Avenue, Indiranagar, Bengaluru, Karnataka | +91 98765 43210',
-            defaultTerms: '10% Booking | 40% Material Procurement | 30% Carcass Completion | 15% Shutters & Hardware | 5% Handover',
-            bankDetails: 'HDFC Bank | A/C: 50200012345678 | IFSC: HDFC0001234 | UPI: dadodec@hdfcbank',
-            taxMode: 'intra',
-            logoBase64: null
+    'use strict';
+
+    // ─────────────────────────────────────────────────────────
+    // STATE & DEFAULTS
+    // ─────────────────────────────────────────────────────────
+    const DEFAULT_SETTINGS = {
+        companyName: 'Dadodec Interiors',
+        email: 'info@dadodec.com',
+        location: '123 Dadodec Avenue, Indiranagar, Bangalore, Karnataka - 560038',
+        phone: '+91 98765 43210',
+        website: 'www.dadodec.com',
+        gstin: '29ABCDE1234F1Z5',
+        validity: '30 Days',
+        warranty: '15 Years Warranty Provided By Dadodec Interiors',
+        logoBase64: '',
+        bankAccName: 'Dadodec Interiors Pvt Ltd',
+        bankName: 'HDFC Bank',
+        bankAccNo: '50200012345678',
+        bankIfsc: 'HDFC0001234',
+        bankBranch: 'Indiranagar Branch',
+        bankUpi: 'dadodec@hdfcbank',
+        payment: '10% Advance on Booking\n40% on Material Procurement\n45% on Execution\n5% on Final Handover',
+        rateDry: 1249,
+        rateWet: 1349,
+        terms: '1. This quotation is valid for 30 days.\n2. 50% advance payment required to commence work.\n3. Final cost is subject to actual site measurements.\n4. Design changes after approval may incur additional costs.'
+    };
+
+    const HOME_TYPES = ['1 BHK', '2 BHK', '3 BHK', '4 BHK', 'Villa', 'Duplex', 'Commercial'];
+
+    let settings = {};
+    let quotations = [];
+    
+    const wizardState = {
+        name: '', phone: '', email: '', location: '', propertyType: '',
+        totalArea: 0, dryArea: 0, wetArea: 0, totalCost: 0
+    };
+
+    let currentQuotId = null;
+
+    // ─────────────────────────────────────────────────────────
+    // INIT
+    // ─────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        loadSettings();
+        loadQuotations();
+        renderHomeTypes();
+        renderSettingsForm();
+        
+        // Start view
+        if (quotations.length > 0) switchView('dashboard');
+        else switchView('wizard');
+    });
+
+    // ─────────────────────────────────────────────────────────
+    // NAVIGATION
+    // ─────────────────────────────────────────────────────────
+    function switchView(view) {
+        ['dashboard', 'wizard', 'editor', 'settings'].forEach(v => {
+            document.getElementById(`view-${v}`).classList.add('hidden');
+            const nav = document.getElementById(`nav-${v}`);
+            if (nav) nav.classList.remove('active');
+        });
+        
+        document.getElementById(`view-${view}`).classList.remove('hidden');
+        const activeNav = document.getElementById(`nav-${view}`);
+        if (activeNav) activeNav.classList.add('active');
+
+        const titles = {
+            dashboard: 'Dashboard',
+            wizard: 'New Quotation',
+            editor: 'Document Editor',
+            settings: 'System Settings'
+        };
+        document.getElementById('topbar-title').textContent = titles[view];
+        document.getElementById('main-scroll').scrollTop = 0;
+
+        if (view === 'dashboard') renderDashboard();
+    }
+
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function fmtMoney(amt) {
+        return Math.round(amt).toLocaleString('en-IN');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // SETTINGS
+    // ─────────────────────────────────────────────────────────
+    function loadSettings() {
+        const saved = localStorage.getItem('dadodec_unified_settings');
+        settings = saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : { ...DEFAULT_SETTINGS };
+        
+        // Update UI labels for rates
+        document.getElementById('lbl-rate-dry').textContent = settings.rateDry;
+        document.getElementById('lbl-rate-wet').textContent = settings.rateWet;
+    }
+
+    function renderSettingsForm() {
+        document.getElementById('set-company').value = settings.companyName;
+        document.getElementById('set-email').value = settings.email;
+        document.getElementById('set-phone').value = settings.phone;
+        document.getElementById('set-location').value = settings.location;
+        document.getElementById('set-website').value = settings.website;
+        document.getElementById('set-warranty').value = settings.warranty;
+        document.getElementById('set-gstin').value = settings.gstin || '';
+        document.getElementById('set-validity').value = settings.validity || '';
+        
+        document.getElementById('set-rate-dry').value = settings.rateDry;
+        document.getElementById('set-rate-wet').value = settings.rateWet;
+        
+        document.getElementById('set-bank-accname').value = settings.bankAccName;
+        document.getElementById('set-bank-name').value = settings.bankName;
+        document.getElementById('set-bank-accno').value = settings.bankAccNo;
+        document.getElementById('set-bank-ifsc').value = settings.bankIfsc;
+        document.getElementById('set-bank-upi').value = settings.bankUpi || '';
+        
+        document.getElementById('set-terms').value = settings.terms;
+        document.getElementById('set-payment').value = settings.payment || '';
+
+        if (settings.logoBase64) {
+            const img = document.getElementById('set-logo-preview');
+            img.src = settings.logoBase64;
+            img.classList.remove('hidden');
+            document.getElementById('set-logo-placeholder').classList.add('hidden');
+        }
+    }
+
+    function handleLogoUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+            settings.logoBase64 = ev.target.result;
+            const img = document.getElementById('set-logo-preview');
+            img.src = settings.logoBase64;
+            img.classList.remove('hidden');
+            document.getElementById('set-logo-placeholder').classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function saveSettings() {
+        settings.companyName = document.getElementById('set-company').value;
+        settings.email = document.getElementById('set-email').value;
+        settings.phone = document.getElementById('set-phone').value;
+        settings.location = document.getElementById('set-location').value;
+        settings.website = document.getElementById('set-website').value;
+        settings.warranty = document.getElementById('set-warranty').value;
+        settings.gstin = document.getElementById('set-gstin').value;
+        settings.validity = document.getElementById('set-validity').value;
+        
+        settings.rateDry = parseFloat(document.getElementById('set-rate-dry').value) || 1249;
+        settings.rateWet = parseFloat(document.getElementById('set-rate-wet').value) || 1349;
+        
+        settings.bankAccName = document.getElementById('set-bank-accname').value;
+        settings.bankName = document.getElementById('set-bank-name').value;
+        settings.bankAccNo = document.getElementById('set-bank-accno').value;
+        settings.bankIfsc = document.getElementById('set-bank-ifsc').value;
+        settings.bankUpi = document.getElementById('set-bank-upi').value;
+        
+        settings.terms = document.getElementById('set-terms').value;
+        settings.payment = document.getElementById('set-payment').value;
+
+        localStorage.setItem('dadodec_unified_settings', JSON.stringify(settings));
+        
+        document.getElementById('lbl-rate-dry').textContent = settings.rateDry;
+        document.getElementById('lbl-rate-wet').textContent = settings.rateWet;
+        
+        showToast('✅ Settings saved successfully');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // WIZARD
+    // ─────────────────────────────────────────────────────────
+    function renderHomeTypes() {
+        document.getElementById('wiz-property-grid').innerHTML = HOME_TYPES.map(ht => `
+            <div class="home-type-card text-xs font-bold text-slate-700" id="ht-${ht.replace(/\s+/g,'')}" onclick="selectProperty('${ht}')">
+                <div class="icon-box w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-2 text-lg transition-colors">
+                    <i class="ph ph-house"></i>
+                </div>
+                ${ht}
+            </div>
+        `).join('');
+    }
+
+    function selectProperty(ht) {
+        wizardState.propertyType = ht;
+        document.querySelectorAll('.home-type-card').forEach(c => c.classList.remove('selected'));
+        document.getElementById(`ht-${ht.replace(/\s+/g,'')}`).classList.add('selected');
+        checkWizard();
+    }
+
+    function checkWizard() {
+        wizardState.name = document.getElementById('wiz-name').value.trim();
+        wizardState.phone = document.getElementById('wiz-phone').value.trim();
+        wizardState.email = document.getElementById('wiz-email').value.trim();
+        wizardState.location = document.getElementById('wiz-location').value.trim();
+        
+        const ok = wizardState.name && wizardState.phone && wizardState.location && wizardState.propertyType;
+        const step2 = document.getElementById('wizard-step-2');
+        if (ok) {
+            step2.classList.remove('opacity-50', 'pointer-events-none');
+        } else {
+            step2.classList.add('opacity-50', 'pointer-events-none');
+        }
+    }
+
+    function calculateCosts(isManualSplit = false) {
+        wizardState.totalArea = parseFloat(document.getElementById('wiz-total-area').value) || 0;
+        const mode = document.getElementById('wiz-split-mode').value;
+        
+        const dryInp = document.getElementById('wiz-dry-area');
+        const wetInp = document.getElementById('wiz-wet-area');
+        
+        if (mode === 'auto' && !isManualSplit) {
+            dryInp.readOnly = true;
+            wetInp.readOnly = true;
+            dryInp.classList.add('bg-slate-50');
+            wetInp.classList.add('bg-slate-50');
+            
+            wizardState.dryArea = Math.round(wizardState.totalArea * 0.8);
+            wizardState.wetArea = Math.round(wizardState.totalArea * 0.2);
+            dryInp.value = wizardState.dryArea;
+            wetInp.value = wizardState.wetArea;
+        } else if (mode === 'custom') {
+            dryInp.readOnly = false;
+            wetInp.readOnly = false;
+            dryInp.classList.remove('bg-slate-50');
+            wetInp.classList.remove('bg-slate-50');
+            
+            wizardState.dryArea = parseFloat(dryInp.value) || 0;
+            wizardState.wetArea = parseFloat(wetInp.value) || 0;
+        }
+
+        const costDry = wizardState.dryArea * settings.rateDry;
+        const costWet = wizardState.wetArea * settings.rateWet;
+        wizardState.totalCost = costDry + costWet;
+
+        document.getElementById('wiz-dry-cost').textContent = `₹${fmtMoney(costDry)}`;
+        document.getElementById('wiz-wet-cost').textContent = `₹${fmtMoney(costWet)}`;
+        document.getElementById('wiz-total-cost').textContent = `₹${fmtMoney(wizardState.totalCost)}`;
+
+        document.getElementById('btn-generate-doc').disabled = wizardState.totalArea < 100;
+    }
+
+    function startNewQuotation() {
+        Object.keys(wizardState).forEach(k => wizardState[k] = (typeof wizardState[k] === 'number' ? 0 : ''));
+        ['wiz-name','wiz-phone','wiz-email','wiz-location','wiz-total-area','wiz-dry-area','wiz-wet-area'].forEach(id => document.getElementById(id).value = '');
+        document.querySelectorAll('.home-type-card').forEach(c => c.classList.remove('selected'));
+        document.getElementById('wiz-split-mode').value = 'auto';
+        calculateCosts();
+        checkWizard();
+        
+        // Generate new ID
+        const num = String(quotations.length + 1).padStart(4, '0');
+        currentQuotId = `DAD-QUOTE-${num}`;
+        
+        switchView('wizard');
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // DOCUMENT EDITOR / PDF PREP
+    // ─────────────────────────────────────────────────────────
+    function prepareDocument() {
+        // Branding
+        const logoImg = document.getElementById('doc-logo');
+        const logoTxt = document.getElementById('doc-logo-text');
+        if (settings.logoBase64) {
+            logoImg.src = settings.logoBase64;
+            logoImg.classList.remove('hidden');
+            logoTxt.classList.add('hidden');
+        } else {
+            logoImg.classList.add('hidden');
+            logoTxt.classList.remove('hidden');
+        }
+        
+        document.getElementById('doc-company-name').textContent = settings.companyName;
+        document.getElementById('doc-company-contact').textContent = `${settings.phone} | ${settings.email}`;
+        document.getElementById('doc-company-location').textContent = settings.location;
+        document.getElementById('doc-company-gstin').textContent = `GSTIN: ${settings.gstin}`;
+        document.getElementById('doc-sig-name').textContent = settings.companyName;
+        
+        // Meta
+        document.getElementById('doc-quote-no').textContent = currentQuotId;
+        document.getElementById('doc-date').textContent = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric'});
+        document.getElementById('doc-validity').textContent = settings.validity;
+
+        // Client & Project
+        document.getElementById('doc-cust-name').textContent = wizardState.name;
+        document.getElementById('doc-cust-phone').textContent = wizardState.phone;
+        document.getElementById('doc-cust-email').textContent = wizardState.email;
+        document.getElementById('doc-cust-location').textContent = wizardState.location;
+        
+        document.getElementById('doc-prop-type').textContent = wizardState.propertyType;
+        document.getElementById('doc-total-area').textContent = `Total Area: ${fmtMoney(wizardState.totalArea)} sq.ft`;
+        
+        // Ensure dry area / wet area nodes exist in case we need to map them elsewhere, but we removed them from the project details box to clean up space (or kept them, let's map safely)
+        const docDryArea = document.getElementById('doc-dry-area');
+        if(docDryArea) docDryArea.textContent = `${fmtMoney(wizardState.dryArea)} sq.ft`;
+        const docWetArea = document.getElementById('doc-wet-area');
+        if(docWetArea) docWetArea.textContent = `${fmtMoney(wizardState.wetArea)} sq.ft`;
+
+        // Cost Table
+        document.getElementById('doc-tbl-dry-sqft').textContent = `${fmtMoney(wizardState.dryArea)} sq.ft`;
+        document.getElementById('doc-tbl-dry-rate').textContent = `₹${fmtMoney(settings.rateDry)}`;
+        document.getElementById('doc-tbl-dry-amt').textContent = `₹${fmtMoney(wizardState.dryArea * settings.rateDry)}`;
+
+        document.getElementById('doc-tbl-wet-sqft').textContent = `${fmtMoney(wizardState.wetArea)} sq.ft`;
+        document.getElementById('doc-tbl-wet-rate').textContent = `₹${fmtMoney(settings.rateWet)}`;
+        document.getElementById('doc-tbl-wet-amt').textContent = `₹${fmtMoney(wizardState.wetArea * settings.rateWet)}`;
+
+        // Financial Summary
+        const subtotal = wizardState.totalCost;
+        document.getElementById('doc-sum-subtotal').textContent = `₹${fmtMoney(subtotal)}`;
+        document.getElementById('doc-sum-discount').textContent = `₹0`;
+        document.getElementById('doc-sum-taxable').textContent = `₹${fmtMoney(subtotal)}`;
+        document.getElementById('doc-sum-gst').textContent = `₹0`;
+        
+        const sumTotalEl = document.getElementById('doc-sum-total');
+        if(sumTotalEl) sumTotalEl.textContent = `₹${fmtMoney(subtotal)}`;
+        const tblTotalEl = document.getElementById('doc-tbl-total');
+        if(tblTotalEl) tblTotalEl.textContent = `₹${fmtMoney(subtotal)}`;
+
+        // Payment & Bank & Warranty
+        document.getElementById('doc-bank-name').textContent = settings.bankName;
+        document.getElementById('doc-bank-accname').textContent = settings.bankAccName;
+        document.getElementById('doc-bank-accno').textContent = settings.bankAccNo;
+        document.getElementById('doc-bank-ifsc').textContent = settings.bankIfsc;
+        
+        const docBankUpi = document.getElementById('doc-bank-upi');
+        if(docBankUpi) docBankUpi.textContent = settings.bankUpi;
+        
+        const docPayment = document.getElementById('doc-payment');
+        if(docPayment) docPayment.textContent = settings.payment;
+        document.getElementById('doc-warranty').textContent = settings.warranty;
+        document.getElementById('doc-terms').textContent = settings.terms;
+
+        saveQuotation('draft');
+        switchView('editor');
+    }
+
+    function generatePDF() {
+        const el = document.getElementById('print-sheet');
+        const opt = {
+            margin:       0,
+            filename:     `${currentQuotId}_${wizardState.name.replace(/\s+/g,'_')}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true, logging: false },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        
+        // Temporarily remove contenteditable for clean PDF
+        const editables = el.querySelectorAll('[contenteditable="true"]');
+        editables.forEach(n => n.removeAttribute('contenteditable'));
+        
+        html2pdf().set(opt).from(el).save().then(() => {
+            editables.forEach(n => n.setAttribute('contenteditable', 'true'));
+            saveQuotation('generated');
+            showToast('📥 PDF Downloaded Successfully');
+        });
+    }
+
+    function printPDF() {
+        window.print();
+        saveQuotation('generated');
+    }
+
+    function shareQuotation() {
+        const text = `Dadodec Interiors Quotation for ${wizardState.name}\nID: ${currentQuotId}\nTotal: ₹${fmtMoney(wizardState.totalCost)}\n\nPlease find the PDF attached or request a copy.`;
+        if (navigator.share) {
+            navigator.share({ title: `Quotation ${currentQuotId}`, text });
+            saveQuotation('sent');
+        } else {
+            navigator.clipboard.writeText(text);
+            showToast('📋 Details copied to clipboard. Paste in WhatsApp/Email.');
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────
+    // DASHBOARD & HISTORY
+    // ─────────────────────────────────────────────────────────
+    function loadQuotations() {
+        const saved = localStorage.getItem('dadodec_unified_quotes');
+        quotations = saved ? JSON.parse(saved) : [];
+    }
+
+    function saveQuotation(status) {
+        if (!currentQuotId) return;
+        
+        const record = {
+            id: currentQuotId,
+            client: wizardState.name,
+            total: wizardState.totalCost,
+            date: new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }),
+            status: status
         };
 
-        let docMode = 'quote'; // 'quote' or 'receipt'
-        let lineItems = [
-            { id: 1, room: 'Kitchen', desc: 'Modular Acrylic Kitchen - Base & Wall Cabinets (Waterproof HDMR Ply + Hafele Hardware)', qty: 95, unit: 'sqft', rate: 2200 },
-            { id: 2, room: 'Master Bedroom', desc: 'Full Height Wardrobe with Sliding Mechanism & High Gloss Merino Laminate Finish', qty: 120, unit: 'sqft', rate: 1850 },
-            { id: 3, room: 'Living Room', desc: 'Gypsum Board False Ceiling with Peripheral LED Cove Lighting & Cutouts', qty: 350, unit: 'sqft', rate: 140 }
-        ];
+        const idx = quotations.findIndex(q => q.id === currentQuotId);
+        if (idx >= 0) quotations[idx] = record;
+        else quotations.unshift(record);
 
-        // ---- INITIALIZATION ----
-        document.addEventListener('DOMContentLoaded', () => {
-            loadSettings();
-            
-            const dateEl = document.getElementById('cfg-quote-date');
-            if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
-            
-            renderBuilderItems();
-            updatePreview();
-        });
+        localStorage.setItem('dadodec_unified_quotes', JSON.stringify(quotations));
+    }
 
-        // View Switcher (SaaS Tab Navigation)
-        function switchView(view) {
-            const views = ['editor', 'settings'];
-            const titleEl = document.getElementById('topbar-title');
-            const subtitleEl = document.getElementById('topbar-subtitle');
-            const actions = document.getElementById('topbar-actions');
-
-            views.forEach(v => {
-                const el = document.getElementById(`view-${v}`);
-                const navBtn = document.getElementById(`nav-${v}`);
-                
-                if (v === view) {
-                    el.classList.remove('hidden');
-                    if (v === 'editor') el.classList.add('flex', 'flex-col', 'xl:flex-row');
-                    
-                    navBtn.classList.replace('text-slate-400', 'text-gold-400');
-                    navBtn.classList.replace('hover:text-white', 'text-gold-400');
-                    navBtn.classList.replace('hover:bg-slate-800', 'bg-gold-500/10');
-                } else {
-                    el.classList.add('hidden');
-                    if (v === 'editor') el.classList.remove('flex', 'flex-col', 'xl:flex-row');
-                    
-                    navBtn.classList.replace('text-gold-400', 'text-slate-400');
-                    navBtn.classList.replace('bg-gold-500/10', 'hover:bg-slate-800');
-                    navBtn.classList.add('hover:text-white');
-                }
-            });
-
-            if (view === 'settings') {
-                titleEl.textContent = 'Configuration';
-                subtitleEl.textContent = 'Settings';
-                actions.classList.add('hidden');
-            } else {
-                titleEl.textContent = 'Create Document';
-                subtitleEl.textContent = 'Editor';
-                actions.classList.remove('hidden');
-            }
+    function renderDashboard() {
+        const tbody = document.getElementById('dash-table-body');
+        if (quotations.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center py-12 text-slate-400">No quotations generated yet.</td></tr>`;
+            return;
         }
 
-        // Settings Management
-        function loadSettings() {
-            const saved = localStorage.getItem('dadodec_settings');
-            if (saved) {
-                appSettings = { ...appSettings, ...JSON.parse(saved) };
-            }
+        const getBadge = s => {
+            const map = { draft:'bg-slate-100 text-slate-600', generated:'bg-sky-100 text-sky-700', sent:'bg-amber-100 text-amber-700', approved:'bg-emerald-100 text-emerald-700' };
+            return `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${map[s]||'bg-slate-100 text-slate-600'}">${s}</span>`;
+        };
 
-            // Populate Settings Form
-            document.getElementById('set-company-name').value = appSettings.companyName;
-            document.getElementById('set-company-gstin').value = appSettings.companyGstin;
-            document.getElementById('set-company-addr').value = appSettings.companyAddr;
-            document.getElementById('set-payment-terms').value = appSettings.defaultTerms;
-            document.getElementById('set-bank-details').value = appSettings.bankDetails;
-            document.getElementById('set-tax-mode').value = appSettings.taxMode;
+        tbody.innerHTML = quotations.map(q => `
+            <tr class="hover:bg-slate-50 transition">
+                <td class="px-6 py-4 font-mono text-xs font-bold text-gold-600">${q.id}</td>
+                <td class="px-6 py-4 font-semibold text-slate-800 text-sm">${q.client}</td>
+                <td class="px-6 py-4 text-slate-500 text-xs">${q.date}</td>
+                <td class="px-6 py-4 font-bold text-slate-800 text-sm">₹${fmtMoney(q.total)}</td>
+                <td class="px-6 py-4">${getBadge(q.status)}</td>
+                <td class="px-6 py-4 text-right">
+                    <select class="text-xs border border-slate-200 rounded p-1" onchange="updateQuoteStatus('${q.id}', this.value)">
+                        <option value="draft" ${q.status==='draft'?'selected':''}>Draft</option>
+                        <option value="generated" ${q.status==='generated'?'selected':''}>Generated</option>
+                        <option value="sent" ${q.status==='sent'?'selected':''}>Sent</option>
+                        <option value="approved" ${q.status==='approved'?'selected':''}>Approved</option>
+                    </select>
+                </td>
+            </tr>
+        `).join('');
+    }
 
-            if (appSettings.logoBase64) {
-                applyLogoToPreview(appSettings.logoBase64);
-            }
+    function updateQuoteStatus(id, newStatus) {
+        const q = quotations.find(q => q.id === id);
+        if (q) {
+            q.status = newStatus;
+            localStorage.setItem('dadodec_unified_quotes', JSON.stringify(quotations));
+            renderDashboard();
+            showToast('✅ Status updated');
         }
-
-        function saveSettings() {
-            appSettings.companyName = document.getElementById('set-company-name').value;
-            appSettings.companyGstin = document.getElementById('set-company-gstin').value;
-            appSettings.companyAddr = document.getElementById('set-company-addr').value;
-            appSettings.defaultTerms = document.getElementById('set-payment-terms').value;
-            appSettings.bankDetails = document.getElementById('set-bank-details').value;
-            appSettings.taxMode = document.getElementById('set-tax-mode').value;
-
-            localStorage.setItem('dadodec_settings', JSON.stringify(appSettings));
-            
-            // Notification toast could go here
-            alert("Settings saved successfully!");
-            
-            updatePreview();
-            switchView('editor');
-        }
-
-        function handleSettingsLogoUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    appSettings.logoBase64 = e.target.result;
-                    applyLogoToPreview(appSettings.logoBase64);
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function applyLogoToPreview(base64Str) {
-            // Settings pane preview
-            document.getElementById('settings-logo-preview').src = base64Str;
-            document.getElementById('settings-logo-preview').classList.remove('hidden');
-            document.getElementById('settings-logo-placeholder').classList.add('hidden');
-            
-            // Document preview pane
-            const pvContainer = document.getElementById('pv-logo-container');
-            pvContainer.innerHTML = `<img src="${base64Str}" alt="Logo" class="w-full h-full object-contain">`;
-            pvContainer.classList.remove('bg-slate-900', 'text-gold-400');
-            pvContainer.classList.add('bg-transparent');
-        }
-
-        // Editor Logic
-        function setDocumentMode(mode) {
-            docMode = mode;
-            const btnQuote = document.getElementById('btn-mode-quote');
-            const btnReceipt = document.getElementById('btn-mode-receipt');
-            const receiptInputs = document.getElementById('receipt-inputs-panel');
-            
-            const pvDocType = document.getElementById('pv-doc-type');
-            const pvValidityLbl = document.getElementById('pv-validity-lbl');
-            const pvValidityVal = document.getElementById('pv-validity-val');
-            const pvReceiptBanner = document.getElementById('pv-receipt-banner');
-            const pvReceiptDueRow = document.getElementById('pv-receipt-due-row');
-
-            if (mode === 'quote') {
-                btnQuote.className = "flex-1 py-1.5 text-xs font-bold rounded-md bg-white text-slate-800 shadow-sm transition";
-                btnReceipt.className = "flex-1 py-1.5 text-xs font-bold rounded-md text-slate-500 hover:text-slate-800 transition";
-                
-                receiptInputs.classList.add('hidden');
-                
-                pvDocType.textContent = "Quotation";
-                pvValidityLbl.classList.remove('hidden');
-                pvValidityVal.classList.remove('hidden');
-                pvReceiptBanner.classList.add('hidden');
-                pvReceiptDueRow.classList.add('hidden');
-            } else {
-                btnReceipt.className = "flex-1 py-1.5 text-xs font-bold rounded-md bg-white text-slate-800 shadow-sm transition";
-                btnQuote.className = "flex-1 py-1.5 text-xs font-bold rounded-md text-slate-500 hover:text-slate-800 transition";
-                
-                receiptInputs.classList.remove('hidden');
-                
-                pvDocType.textContent = "Payment Receipt";
-                pvValidityLbl.classList.add('hidden');
-                pvValidityVal.classList.add('hidden');
-                pvReceiptBanner.classList.remove('hidden');
-                pvReceiptDueRow.classList.remove('hidden');
-            }
-            updatePreview();
-        }
-
-        function addNewLineItem() {
-            lineItems.push({
-                id: Date.now(),
-                room: '',
-                desc: '',
-                qty: 1,
-                unit: 'sqft',
-                rate: 0
-            });
-            renderBuilderItems();
-            updatePreview();
-        }
-
-        function removeLineItem(id) {
-            lineItems = lineItems.filter(item => item.id !== id);
-            renderBuilderItems();
-            updatePreview();
-        }
-
-        function updateLineItem(id, field, value) {
-            const item = lineItems.find(i => i.id === id);
-            if (item) {
-                item[field] = (field === 'qty' || field === 'rate') ? (parseFloat(value) || 0) : value;
-                updatePreview();
-                // Update local total display in builder
-                const el = document.getElementById(`subtotal-${id}`);
-                if (el) el.textContent = formatCurrency(item.qty * item.rate);
-            }
-        }
-
-        function renderBuilderItems() {
-            const container = document.getElementById('items-builder-container');
-            container.innerHTML = '';
-
-            lineItems.forEach((item, index) => {
-                const total = item.qty * item.rate;
-                const row = document.createElement('div');
-                row.className = 'bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs relative group';
-                row.innerHTML = `
-                    <button onclick="removeLineItem(${item.id})" class="absolute -top-2 -right-2 w-5 h-5 bg-white border border-slate-200 text-slate-400 hover:text-rose-500 hover:border-rose-200 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm">
-                        <i class="ph ph-x text-xs"></i>
-                    </button>
-                    <div class="grid grid-cols-12 gap-2">
-                        <div class="col-span-12 md:col-span-4">
-                            <input type="text" placeholder="Room / Area" value="${item.room}" oninput="updateLineItem(${item.id}, 'room', this.value)" class="w-full bg-white border border-slate-200 rounded p-1.5 focus:border-gold-500 outline-none">
-                        </div>
-                        <div class="col-span-12 md:col-span-8">
-                            <input type="text" placeholder="Description / Specification" value="${item.desc}" oninput="updateLineItem(${item.id}, 'desc', this.value)" class="w-full bg-white border border-slate-200 rounded p-1.5 focus:border-gold-500 outline-none">
-                        </div>
-                        
-                        <div class="col-span-4 md:col-span-3">
-                            <input type="number" placeholder="Qty" value="${item.qty}" min="0" step="0.1" oninput="updateLineItem(${item.id}, 'qty', this.value)" class="w-full bg-white border border-slate-200 rounded p-1.5 focus:border-gold-500 outline-none">
-                        </div>
-                        <div class="col-span-4 md:col-span-3">
-                            <select onchange="updateLineItem(${item.id}, 'unit', this.value)" class="w-full bg-white border border-slate-200 rounded p-1.5 focus:border-gold-500 outline-none">
-                                <option value="sqft" ${item.unit === 'sqft' ? 'selected' : ''}>sq.ft.</option>
-                                <option value="nos" ${item.unit === 'nos' ? 'selected' : ''}>nos</option>
-                                <option value="ls" ${item.unit === 'ls' ? 'selected' : ''}>lumpsum</option>
-                            </select>
-                        </div>
-                        <div class="col-span-4 md:col-span-3">
-                            <input type="number" placeholder="Rate" value="${item.rate}" min="0" oninput="updateLineItem(${item.id}, 'rate', this.value)" class="w-full bg-white border border-slate-200 rounded p-1.5 focus:border-gold-500 outline-none">
-                        </div>
-                        <div class="col-span-12 md:col-span-3 flex items-center justify-end font-semibold text-slate-800 px-2">
-                            <span id="subtotal-${item.id}">${formatCurrency(total)}</span>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(row);
-            });
-        }
-
-        // Preview Sync & Maths
-        function updatePreview() {
-            // Apply Settings to Header
-            document.getElementById('pv-company-name').textContent = appSettings.companyName;
-            document.getElementById('pv-sig-company').textContent = appSettings.companyName;
-            document.getElementById('pv-company-gstin').textContent = appSettings.companyGstin;
-            document.getElementById('pv-company-addr').textContent = appSettings.companyAddr;
-            document.getElementById('pv-payment-terms').textContent = appSettings.defaultTerms;
-            document.getElementById('pv-bank-details').textContent = appSettings.bankDetails;
-
-            // Apply Form Meta
-            document.getElementById('pv-quote-no').textContent = document.getElementById('cfg-quote-no').value || '--';
-            
-            const rawDate = document.getElementById('cfg-quote-date').value;
-            let formattedDate = '--';
-            if (rawDate) {
-                const d = new Date(rawDate);
-                formattedDate = d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-            }
-            document.getElementById('pv-quote-date').textContent = formattedDate;
-            
-            document.getElementById('pv-client-name').textContent = document.getElementById('cfg-client-name').value || '--';
-            document.getElementById('pv-client-phone').textContent = document.getElementById('cfg-client-phone').value || '--';
-            document.getElementById('pv-site-address').textContent = document.getElementById('cfg-site-address').value || '--';
-
-            // Items Table
-            const tbody = document.getElementById('pv-items-table-body');
-            tbody.innerHTML = '';
-            let subtotal = 0;
-
-            lineItems.forEach((item, idx) => {
-                const itemTotal = item.qty * item.rate;
-                subtotal += itemTotal;
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="text-center font-medium text-slate-400">${idx + 1}</td>
-                    <td class="font-semibold text-slate-800">${item.room}</td>
-                    <td class="text-slate-600">${item.desc}</td>
-                    <td class="text-center">${item.qty} <span class="text-[9px] uppercase text-slate-400">${item.unit}</span></td>
-                    <td class="text-right">${formatCurrency(item.rate)}</td>
-                    <td class="text-right font-semibold text-slate-900">${formatCurrency(itemTotal)}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            // Financials
-            const discount = parseFloat(document.getElementById('cfg-discount').value) || 0;
-            const taxable = Math.max(0, subtotal - discount);
-            let cgst = 0, sgst = 0, igst = 0, grandTotal = taxable;
-
-            if (appSettings.taxMode === 'intra') {
-                cgst = taxable * 0.09;
-                sgst = taxable * 0.09;
-                grandTotal += cgst + sgst;
-                document.getElementById('pv-row-cgst').classList.remove('hidden');
-                document.getElementById('pv-row-sgst').classList.remove('hidden');
-                document.getElementById('pv-row-igst').classList.add('hidden');
-            } else if (appSettings.taxMode === 'inter') {
-                igst = taxable * 0.18;
-                grandTotal += igst;
-                document.getElementById('pv-row-cgst').classList.add('hidden');
-                document.getElementById('pv-row-sgst').classList.add('hidden');
-                document.getElementById('pv-row-igst').classList.remove('hidden');
-            } else {
-                document.getElementById('pv-row-cgst').classList.add('hidden');
-                document.getElementById('pv-row-sgst').classList.add('hidden');
-                document.getElementById('pv-row-igst').classList.add('hidden');
-            }
-
-            // Update DOM Values
-            document.getElementById('pv-subtotal').textContent = formatCurrency(subtotal);
-            document.getElementById('pv-discount').textContent = `-${formatCurrency(discount)}`;
-            document.getElementById('pv-taxable').textContent = formatCurrency(taxable);
-            document.getElementById('pv-cgst').textContent = formatCurrency(cgst);
-            document.getElementById('pv-sgst').textContent = formatCurrency(sgst);
-            document.getElementById('pv-igst').textContent = formatCurrency(igst);
-            document.getElementById('pv-grandtotal').textContent = formatCurrency(grandTotal);
-            document.getElementById('pv-words').textContent = numberToWordsIndian(grandTotal);
-
-            // Receipt Specific Sync
-            if (docMode === 'receipt') {
-                const paidAmt = parseFloat(document.getElementById('cfg-paid-amount').value) || 0;
-                const payMode = document.getElementById('cfg-payment-mode').value;
-                const txnRef = document.getElementById('cfg-txn-ref').value;
-                const balanceDue = Math.max(0, grandTotal - paidAmt);
-
-                document.getElementById('pv-receipt-amount-display').textContent = formatCurrency(paidAmt);
-                document.getElementById('pv-receipt-mode-display').textContent = payMode;
-                document.getElementById('pv-receipt-ref-display').textContent = txnRef || '--';
-                
-                document.getElementById('pv-receipt-paid-display').textContent = formatCurrency(paidAmt);
-                document.getElementById('pv-receipt-due-display').textContent = formatCurrency(balanceDue);
-            }
-        }
-
-        // Helpers
-        function formatCurrency(num) {
-            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(num);
-        }
-
-        function numberToWordsIndian(num) {
-            if (num === 0) return "Rupees Zero Only";
-            const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
-            const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-            const inWords = (n) => {
-                let str = '';
-                if (n > 99) { str += a[Math.floor(n / 100)] + "Hundred "; n %= 100; }
-                if (n > 19) { str += b[Math.floor(n / 10)] + " "; n %= 10; }
-                if (n > 0) str += a[n];
-                return str;
-            };
-
-            let crore = Math.floor(num / 10000000); num %= 10000000;
-            let lakh = Math.floor(num / 100000); num %= 100000;
-            let thousand = Math.floor(num / 1000); num %= 1000;
-            let remainder = Math.floor(num);
-
-            let res = '';
-            if (crore > 0) res += inWords(crore) + "Crore ";
-            if (lakh > 0) res += inWords(lakh) + "Lakh ";
-            if (thousand > 0) res += inWords(thousand) + "Thousand ";
-            if (remainder > 0) res += inWords(remainder);
-            return "Rupees " + res.trim() + " Only";
-        }
-
-        // PDF Export Engine
-        function exportToPDF() {
-            const element = document.getElementById('quotation-print-sheet');
-            const refNo = document.getElementById('cfg-quote-no').value || 'Dadodec_Doc';
-            
-            // Temporary fix for PDF generation scale
-            element.style.transform = 'none';
-            element.style.width = '210mm';
-            element.style.margin = '0';
-            
-            const opt = {
-                margin:       [10, 5, 10, 5],
-                filename:     `${refNo.replace(/\//g, '_')}_${docMode.toUpperCase()}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, logging: false },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(element).save().then(() => {
-                // Restore styles after export
-                element.style.transform = '';
-                element.style.width = '';
-                element.style.margin = '';
-            });
-        }
+    }
     </script>
 </body>
 </html>
