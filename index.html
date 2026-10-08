@@ -265,8 +265,19 @@
                                     <i class="ph ph-image text-3xl mb-1"></i><div class="text-[10px] font-bold">LOGO</div>
                                 </div>
                                 <label class="absolute inset-0 bg-slate-900/50 flex items-center justify-center text-white text-xs font-bold opacity-0 group-hover:opacity-100 cursor-pointer transition">
-                                    Upload <input type="file" class="hidden" accept="image/*" onchange="handleLogoUpload(event)">
+                                    Upload Logo <input type="file" class="hidden" accept="image/png,image/jpeg,image/webp" onchange="handleLogoUpload(event)">
                                 </label>
+                            </div>
+                            <div class="w-40 shrink-0">
+                                <label class="form-label">Authorised Signature</label>
+                                <div class="h-24 border-2 border-dashed border-slate-300 rounded-lg bg-white flex items-center justify-center overflow-hidden p-2">
+                                    <img id="set-signature-preview" src="assets/dadodec-signature.png" alt="Signature preview" class="max-w-full max-h-full object-contain">
+                                </div>
+                                <label class="btn-gold mt-2 px-3 py-2 rounded-lg text-xs font-bold inline-flex items-center justify-center cursor-pointer w-full">
+                                    Upload Signature
+                                    <input type="file" class="hidden" accept="image/png,image/jpeg,image/webp" onchange="handleSignatureUpload(event)">
+                                </label>
+                                <button type="button" onclick="clearSignatureUpload()" class="mt-1 text-xs text-slate-500 hover:text-slate-800 w-full">Use bundled signature</button>
                             </div>
                             <div class="flex-1 space-y-4">
                                 <div><label class="form-label">Company Name</label><input type="text" id="set-company" class="form-input"></div>
@@ -556,6 +567,7 @@
         validity: '30 Days',
         warranty: '15 Years Warranty Provided By Dadodec Interiors',
         logoBase64: '',
+        signatureBase64: '',
         bankAccName: 'BILVWIN GLOBALEX PRIVATE LIMITED',
         bankName: 'Bank of Baroda',
         bankAccNo: '28740200000713',
@@ -687,20 +699,53 @@
         logoPreview.src = settings.logoBase64 || 'assets/dadodec-logo.png';
         logoPreview.classList.remove('hidden');
         document.getElementById('set-logo-placeholder').classList.add('hidden');
+        document.getElementById('set-signature-preview').src = settings.signatureBase64 || 'assets/dadodec-signature.png';
     }
 
     function handleLogoUpload(e) {
+        handleImageUpload(e, 'logoBase64', 'set-logo-preview');
+    }
+
+    function handleSignatureUpload(e) {
+        handleImageUpload(e, 'signatureBase64', 'set-signature-preview');
+    }
+
+    function handleImageUpload(e, settingKey, previewId) {
         const file = e.target.files[0];
         if (!file) return;
+        e.target.value = '';
+        if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+            showToast('Please choose a PNG, JPG, or WebP image.');
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            showToast('Please choose an image smaller than 2 MB.');
+            return;
+        }
+
         const reader = new FileReader();
-        reader.onload = ev => {
-            settings.logoBase64 = ev.target.result;
-            const img = document.getElementById('set-logo-preview');
-            img.src = settings.logoBase64;
+        reader.onload = () => {
+            if (typeof reader.result !== 'string') {
+                showToast('The selected image could not be read.');
+                return;
+            }
+            settings[settingKey] = reader.result;
+            const img = document.getElementById(previewId);
+            img.src = reader.result;
             img.classList.remove('hidden');
-            document.getElementById('set-logo-placeholder').classList.add('hidden');
+            if (settingKey === 'logoBase64') {
+                document.getElementById('set-logo-placeholder').classList.add('hidden');
+            }
+            showToast('Image added. Save Settings to keep it.');
         };
+        reader.onerror = () => showToast('The selected image could not be read.');
         reader.readAsDataURL(file);
+    }
+
+    function clearSignatureUpload() {
+        settings.signatureBase64 = '';
+        document.getElementById('set-signature-preview').src = 'assets/dadodec-signature.png';
+        showToast('Bundled signature restored. Save Settings to keep it.');
     }
 
     function saveSettings() {
@@ -727,7 +772,13 @@
         settings.terms = document.getElementById('set-terms').value;
         settings.payment = document.getElementById('set-payment').value;
 
-        localStorage.setItem('dadodec_unified_settings', JSON.stringify(settings));
+        try {
+            localStorage.setItem('dadodec_unified_settings', JSON.stringify(settings));
+        } catch (error) {
+            console.error('Could not save settings:', error);
+            showToast('Settings could not be saved. Try smaller image files.');
+            return;
+        }
         
         document.getElementById('lbl-rate-dry').textContent = settings.rateDry;
         document.getElementById('lbl-rate-wet').textContent = settings.rateWet;
@@ -834,6 +885,9 @@
         logoImg.src = settings.logoBase64 || 'assets/dadodec-logo.png';
         logoImg.classList.remove('hidden');
         logoTxt.classList.add('hidden');
+        const signatureImg = document.getElementById('doc-signature');
+        signatureImg.src = settings.signatureBase64 || 'assets/dadodec-signature.png';
+        signatureImg.classList.remove('hidden');
         
         document.getElementById('doc-company-name').textContent = settings.companyName;
         document.getElementById('doc-company-business').textContent = settings.businessName;
@@ -910,6 +964,10 @@
     async function generatePDF() {
         const el = document.getElementById('print-sheet');
         const button = document.querySelector('button[onclick="generatePDF()"]');
+        if (typeof html2pdf !== 'function') {
+            showToast('PDF library did not load. Check your connection and reload.');
+            return;
+        }
         const opt = {
             margin:       0,
             filename:     `${currentQuotId}_${wizardState.name.replace(/\s+/g,'_')}.pdf`,
@@ -926,11 +984,17 @@
 
         if (button) button.disabled = true;
         let pdfUrl = null;
+        const missingImages = [];
+        const removedImages = [];
         try {
-            await Promise.all([
-                el.querySelector('#doc-logo').decode(),
-                el.querySelector('#doc-signature').decode()
-            ]);
+            for (const [id, label] of [['doc-logo', 'Logo'], ['doc-signature', 'Signature']]) {
+                const image = el.querySelector(`#${id}`);
+                if (!await preparePdfImage(image)) {
+                    removedImages.push({ image, parent: image.parentNode, nextSibling: image.nextSibling });
+                    image.remove();
+                    missingImages.push(label);
+                }
+            }
             const pdfBlob = await html2pdf().set(opt).from(el).outputPdf('blob');
             if (!(pdfBlob instanceof Blob) || pdfBlob.size === 0) {
                 throw new Error('PDF export returned an empty file.');
@@ -946,16 +1010,39 @@
             downloadLink.remove();
 
             saveQuotation('generated');
-            showToast('📥 PDF Downloaded Successfully');
+            showToast(missingImages.length
+                ? `PDF downloaded. ${missingImages.join(' and ')} image unavailable. Add it in Settings.`
+                : '📥 PDF Downloaded Successfully');
         } catch (error) {
             console.error('PDF generation failed:', error);
-            showToast('PDF generation failed. Please try again.');
+            showToast(`PDF generation failed: ${error.message || 'Please try again.'}`);
         } finally {
             if (pdfUrl) setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000);
+            removedImages.forEach(({ image, parent, nextSibling }) => {
+                if (parent) parent.insertBefore(image, nextSibling);
+            });
             el.classList.remove('pdf-exporting');
             editables.forEach(n => n.setAttribute('contenteditable', 'true'));
             if (button) button.disabled = false;
         }
+    }
+
+    async function preparePdfImage(image) {
+        if (!image || !image.getAttribute('src')) return false;
+        if (!image.complete) {
+            await new Promise(resolve => {
+                image.addEventListener('load', resolve, { once: true });
+                image.addEventListener('error', resolve, { once: true });
+            });
+        }
+        if (!image.naturalWidth) return false;
+        try {
+            await image.decode();
+        } catch (error) {
+            console.warn(`Could not decode PDF image "${image.alt}":`, error);
+            return false;
+        }
+        return image.naturalWidth > 0;
     }
 
     function printPDF() {
