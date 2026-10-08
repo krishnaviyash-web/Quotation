@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dadodec Interior Quotation Generator</title>
+    <link rel="icon" type="image/png" href="assets/dadodec-logo.png">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,7 +53,22 @@
         .home-type-card.selected .icon-box { background: #d4af37; color: #0f172a; }
 
         /* A4 Document Editor Styles */
-        .a4-sheet { width: 210mm; min-height: 297mm; background: white; margin: 0 auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); padding: 20mm; font-size: 11px; color: #1e293b; line-height: 1.6; }
+        .a4-sheet { box-sizing: border-box; width: 210mm; min-height: 294mm; background: white; margin: 0 auto; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); padding: 8mm; font-size: 10px; color: #1e293b; line-height: 1.45; }
+        #print-sheet .doc-table { width: 100%; table-layout: fixed; border-collapse: collapse; }
+        #print-sheet .doc-table th, #print-sheet .doc-table td { padding: 5px 7px; vertical-align: top; overflow-wrap: anywhere; }
+        #print-sheet .doc-table td.ce-field { display: table-cell; min-width: 0; }
+        #print-sheet .doc-table th { line-height: 1.3; }
+        #print-sheet .doc-table th:nth-child(1), #print-sheet .doc-table td:nth-child(1) { width: 22%; }
+        #print-sheet .doc-table th:nth-child(2), #print-sheet .doc-table td:nth-child(2) { width: 38%; }
+        #print-sheet .doc-table th:nth-child(3), #print-sheet .doc-table td:nth-child(3) { width: 12%; }
+        #print-sheet .doc-table th:nth-child(4), #print-sheet .doc-table td:nth-child(4) { width: 14%; }
+        #print-sheet .doc-table th:nth-child(5), #print-sheet .doc-table td:nth-child(5) { width: 14%; }
+        #print-sheet td[id^="doc-sum-"] { padding-top: 3px; padding-bottom: 3px; }
+        #print-sheet #doc-sum-total { padding-top: 7px; padding-bottom: 7px; }
+        #print-sheet .doc-company-heading { font-size: 16px; line-height: 1.3; }
+        #print-sheet .doc-keep-together { break-inside: avoid; page-break-inside: avoid; }
+        #print-sheet.pdf-exporting .ce-field { background: transparent !important; border-color: transparent !important; box-shadow: none !important; transition: none !important; }
+        #print-wrap { overflow-x: auto; padding: 0 16px 16px; }
         .ce-field { outline: none; border-radius: 4px; border: 1px solid transparent; transition: all 0.2s; min-height: 1em; display: inline-block; min-width: 20px; }
         .ce-field:hover { background: #f8fafc; border-color: #cbd5e1; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); cursor: text; }
         .ce-field:focus { background: white; border-color: #d4af37; box-shadow: 0 0 0 2px rgba(212,175,55,0.2); }
@@ -64,7 +80,8 @@
             body * { visibility: hidden; }
             #view-editor, #print-wrap, #print-wrap * { visibility: visible; }
             #print-wrap { position: absolute; left: 0; top: 0; margin: 0; padding: 0; box-shadow: none; width: 100%; }
-            .a4-sheet { box-shadow: none; margin: 0; padding: 15mm; }
+            .a4-sheet { box-shadow: none; margin: 0; padding: 8mm; }
+            #print-wrap { overflow: visible; padding: 0; }
             .ce-field { border: none !important; background: transparent !important; box-shadow: none !important; }
             .no-print { display: none !important; }
         }
@@ -78,7 +95,7 @@
     <!-- SIDEBAR -->
     <aside class="no-print w-64 bg-slate-900 text-slate-300 flex flex-col z-30 shadow-2xl shrink-0">
         <div class="h-16 flex items-center px-6 border-b border-slate-800">
-            <div class="w-8 h-8 bg-gold-500 rounded flex items-center justify-center text-slate-900 font-serif font-extrabold text-lg mr-3">D</div>
+            <img src="assets/dadodec-logo.png" alt="Dadodec logo" class="w-9 h-9 rounded mr-3 object-cover">
             <div>
                 <div class="font-serif font-bold text-white tracking-widest text-sm uppercase">Dadodec</div>
                 <div class="text-[10px] text-slate-500 font-medium">Quotation System</div>
@@ -243,7 +260,7 @@
                         
                         <div class="flex items-start gap-6 mb-6">
                             <div class="w-32 h-32 border-2 border-dashed border-slate-300 rounded-lg bg-slate-50 flex items-center justify-center relative group overflow-hidden">
-                                <img id="set-logo-preview" src="" class="hidden max-w-full max-h-full p-2 object-contain">
+                                <img id="set-logo-preview" src="assets/dadodec-logo.png" alt="Company logo preview" class="max-w-full max-h-full p-2 object-contain">
                                 <div id="set-logo-placeholder" class="text-center text-slate-400">
                                     <i class="ph ph-image text-3xl mb-1"></i><div class="text-[10px] font-bold">LOGO</div>
                                 </div>
@@ -253,6 +270,7 @@
                             </div>
                             <div class="flex-1 space-y-4">
                                 <div><label class="form-label">Company Name</label><input type="text" id="set-company" class="form-input"></div>
+                                <div><label class="form-label">Business</label><input type="text" id="set-business" class="form-input"></div>
                                 <div><label class="form-label">GSTIN</label><input type="text" id="set-gstin" class="form-input"></div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div><label class="form-label">Email</label><input type="email" id="set-email" class="form-input"></div>
@@ -261,7 +279,8 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="md:col-span-2"><label class="form-label">Full Office Address</label><input type="text" id="set-location" class="form-input"></div>
+                            <div><label class="form-label">Registered Address</label><input type="text" id="set-registered-address" class="form-input"></div>
+                            <div><label class="form-label">Office Address</label><input type="text" id="set-location" class="form-input"></div>
                             <div><label class="form-label">Website</label><input type="text" id="set-website" class="form-input"></div>
                             <div><label class="form-label">Warranty Text</label><input type="text" id="set-warranty" class="form-input"></div>
                             <div><label class="form-label">Validity Label</label><input type="text" id="set-validity" class="form-input"></div>
@@ -348,13 +367,13 @@
                     <div id="print-sheet" class="a4-sheet relative flex flex-col">
                         
                         <!-- Header -->
-                        <div class="flex justify-between items-start border-b-2 border-gold-500 pb-5 mb-6">
+                        <div class="doc-keep-together flex justify-between items-start gap-4 border-b-2 border-gold-500 pb-4 mb-4">
                             <div class="flex gap-4 items-center">
-                                <img id="doc-logo" class="max-h-16 object-contain hidden" src="">
+                                <img id="doc-logo" class="max-h-16 object-contain hidden">
                                 <div id="doc-logo-text" class="w-14 h-14 bg-slate-900 text-gold-500 rounded flex items-center justify-center font-serif font-black text-2xl hidden">D</div>
                                 <div>
-                                    <h1 class="text-xl font-serif font-bold text-slate-900 tracking-wide ce-field" id="doc-company-name" contenteditable="true">DADODEC INTERIORS</h1>
-                                    <p class="text-[9px] text-slate-600 mt-1 ce-field" id="doc-company-location" contenteditable="true"></p>
+                                    <h1 class="doc-company-heading font-serif font-bold text-slate-900 tracking-wide ce-field" id="doc-company-name" contenteditable="true">DADODEC INTERIORS</h1>
+                                    <p class="text-[9px] text-slate-600 mt-0.5 ce-field" id="doc-company-business" contenteditable="true"></p>
                                     <p class="text-[9px] text-slate-600 mt-0.5 ce-field" id="doc-company-contact" contenteditable="true"></p>
                                     <p class="text-[9px] font-semibold text-slate-700 mt-0.5 ce-field" id="doc-company-gstin" contenteditable="true"></p>
                                 </div>
@@ -370,14 +389,14 @@
                         </div>
 
                         <!-- Client Info & Project Site -->
-                        <div class="flex gap-4 mb-6">
-                            <div class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-4">
+                        <div class="doc-keep-together flex gap-4 mb-4">
+                            <div class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-3">
                                 <h3 class="text-[9px] font-bold uppercase text-gold-600 mb-2 tracking-widest">Billed To</h3>
                                 <p class="font-bold text-slate-800 text-sm ce-field block" id="doc-cust-name" contenteditable="true"></p>
                                 <p class="text-slate-600 text-[10px] mt-1 ce-field block" id="doc-cust-phone" contenteditable="true"></p>
                                 <p class="text-slate-600 text-[10px] ce-field block" id="doc-cust-email" contenteditable="true"></p>
                             </div>
-                            <div class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-4">
+                            <div class="flex-1 bg-slate-50 border border-slate-200 rounded-lg p-3">
                                 <h3 class="text-[9px] font-bold uppercase text-gold-600 mb-2 tracking-widest">Project Site</h3>
                                 <p class="font-bold text-slate-800 text-sm ce-field block" id="doc-prop-type" contenteditable="true"></p>
                                 <p class="text-slate-600 text-[10px] mt-1 font-semibold ce-field block" id="doc-total-area" contenteditable="true"></p>
@@ -386,15 +405,15 @@
                         </div>
 
                         <!-- Quotation Item Table -->
-                        <div class="mb-6 border border-slate-200 rounded-lg overflow-hidden">
+                        <div class="doc-keep-together mb-4 border border-slate-200 rounded-lg overflow-hidden">
                             <table class="w-full doc-table">
                                 <thead class="bg-slate-900 text-gold-400">
                                     <tr>
-                                        <th class="w-1/4">Room / Area</th>
-                                        <th class="w-2/5">Description</th>
-                                        <th class="text-center">Qty</th>
-                                        <th class="text-right">Rate</th>
-                                        <th class="text-right">Amount</th>
+                                        <th style="width:22%">Room / Area</th>
+                                        <th style="width:38%">Description</th>
+                                        <th class="text-center" style="width:12%">Qty</th>
+                                        <th class="text-right" style="width:14%">Rate</th>
+                                        <th class="text-right" style="width:14%">Amount</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-200">
@@ -417,7 +436,7 @@
                         </div>
 
                         <!-- Cost Summary -->
-                        <div class="flex justify-end mb-8">
+                        <div class="doc-keep-together flex justify-end mb-5">
                             <div class="w-1/2">
                                 <table class="w-full text-[10px]">
                                     <tr>
@@ -445,16 +464,16 @@
                         </div>
 
                         <!-- Bottom Information Grid -->
-                        <div class="grid grid-cols-2 gap-6 mb-6">
+                        <div class="doc-keep-together grid grid-cols-2 gap-4 mb-4">
                             <!-- Bank Details -->
                             <div>
                                 <h3 class="text-[9px] font-bold uppercase text-slate-400 mb-2 border-b border-slate-200 pb-1">Bank Details (NEFT/RTGS)</h3>
-                                <div class="text-[9px] text-slate-600 space-y-1 bg-slate-50 border border-slate-200 rounded p-3">
+                                <div class="text-[9px] text-slate-600 space-y-1 bg-slate-50 border border-slate-200 rounded p-2.5">
                                     <p><span class="text-slate-400 inline-block w-20">A/C Name:</span> <span id="doc-bank-accname" contenteditable="true" class="font-bold text-slate-800 ce-field"></span></p>
                                     <p><span class="text-slate-400 inline-block w-20">Bank Name:</span> <span id="doc-bank-name" contenteditable="true" class="font-bold text-slate-800 ce-field"></span></p>
                                     <p><span class="text-slate-400 inline-block w-20">A/C Number:</span> <span id="doc-bank-accno" contenteditable="true" class="font-bold text-slate-800 ce-field"></span></p>
                                     <p><span class="text-slate-400 inline-block w-20">IFSC Code:</span> <span id="doc-bank-ifsc" contenteditable="true" class="font-bold text-slate-800 ce-field"></span></p>
-                                    <p><span class="text-slate-400 inline-block w-20">UPI:</span> <span id="doc-bank-upi" contenteditable="true" class="font-bold text-slate-800 ce-field"></span></p>
+                                    <p id="doc-bank-upi-row" class="hidden"><span class="text-slate-400 inline-block w-20">UPI:</span> <span id="doc-bank-upi" contenteditable="true" class="font-bold text-slate-800 ce-field"></span></p>
                                 </div>
                             </div>
                             
@@ -483,28 +502,30 @@
                         </div>
 
                         <!-- Signature (Absolute Bottom Right of content area) -->
-                        <div class="absolute bottom-[25mm] right-[20mm] text-center">
-                            <div class="border-b border-slate-400 w-32 h-8 mb-1"></div>
+                        <div class="doc-keep-together flex justify-end mt-2 mb-2">
+                          <div class="text-center">
+                            <img id="doc-signature" src="assets/dadodec-signature.png" alt="Authorised signature" class="block mx-auto w-28 h-9 object-contain border-b border-slate-400 mb-1">
                             <p class="text-[8px] font-bold uppercase text-slate-500 tracking-wider">Authorised Signatory</p>
                             <p class="text-[9px] font-serif font-bold text-slate-900 mt-0.5 ce-field" id="doc-sig-name" contenteditable="true"></p>
+                          </div>
                         </div>
 
                         <!-- Professional Footer -->
-                        <div class="mt-auto pt-6">
+                        <div class="doc-keep-together mt-auto pt-4">
                             <div class="grid grid-cols-2 gap-4 text-[8px] text-slate-500 leading-relaxed mb-4">
                                 <div>
-                                    <span class="font-bold text-slate-700 uppercase">Manufacturing Unit:</span><br>
-                                    Sy No. 39/2 Cheemasandra, Post, Virgonagar, Chimasandra, Karnataka 560049
+                                    <span class="font-bold text-slate-700 uppercase">Registered Address:</span><br>
+                                    <span id="doc-registered-address" class="ce-field" contenteditable="true"></span>
                                 </div>
                                 <div>
-                                    <span class="font-bold text-slate-700 uppercase">Experience Centre:</span><br>
-                                    Site No 452, 1st Floor, 17th Cross Rd, 4th Sector, HSR Layout, Bengaluru, Karnataka 560102
+                                    <span class="font-bold text-slate-700 uppercase">Office Address:</span><br>
+                                    <span id="doc-office-address" class="ce-field" contenteditable="true"></span>
                                 </div>
                             </div>
                             <div class="flex justify-between items-center bg-slate-900 text-white px-4 py-2.5 rounded">
-                                <span class="font-semibold text-[9px]">Contact: 97427 75599 | 98804 45697</span>
-                                <span class="font-semibold text-[9px]">Email: info@dadodec.com</span>
-                                <span class="font-semibold text-[9px] text-gold-400">www.dadodec.com</span>
+                                <span class="font-semibold text-[9px]" id="doc-footer-phone"></span>
+                                <span class="font-semibold text-[9px]" id="doc-footer-email"></span>
+                                <span class="font-semibold text-[9px] text-gold-400" id="doc-footer-website"></span>
                             </div>
                         </div>
                         
@@ -524,21 +545,23 @@
     // STATE & DEFAULTS
     // ─────────────────────────────────────────────────────────
     const DEFAULT_SETTINGS = {
-        companyName: 'Dadodec Interiors',
+        companyName: 'BILVWIN GLOBALEX PVT. LTD',
+        businessName: 'Interior Centre & Solutions',
         email: 'info@dadodec.com',
-        location: '123 Dadodec Avenue, Indiranagar, Bangalore, Karnataka - 560038',
-        phone: '+91 98765 43210',
+        registeredAddress: 'Sy. No. 39/2, Cheemasandra, Post, Virgonagar, Bengaluru, Karnataka - 560049',
+        location: 'No. 452, 1st Floor, 17th Cross Rd, 4th Sector, HSR Layout, Bengaluru, Karnataka - 560102',
+        phone: '97427 75599 / 98804 45697',
         website: 'www.dadodec.com',
-        gstin: '29ABCDE1234F1Z5',
+        gstin: '29AANCB0336L1ZE',
         validity: '30 Days',
         warranty: '15 Years Warranty Provided By Dadodec Interiors',
         logoBase64: '',
-        bankAccName: 'Dadodec Interiors Pvt Ltd',
-        bankName: 'HDFC Bank',
-        bankAccNo: '50200012345678',
-        bankIfsc: 'HDFC0001234',
-        bankBranch: 'Indiranagar Branch',
-        bankUpi: 'dadodec@hdfcbank',
+        bankAccName: 'BILVWIN GLOBALEX PRIVATE LIMITED',
+        bankName: 'Bank of Baroda',
+        bankAccNo: '28740200000713',
+        bankIfsc: 'BARB0BANGBS',
+        bankBranch: '',
+        bankUpi: '',
         payment: '10% Advance on Booking\n40% on Material Procurement\n45% on Execution\n5% on Final Handover',
         rateDry: 1249,
         rateWet: 1349,
@@ -613,7 +636,23 @@
     // ─────────────────────────────────────────────────────────
     function loadSettings() {
         const saved = localStorage.getItem('dadodec_unified_settings');
-        settings = saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : { ...DEFAULT_SETTINGS };
+        const savedSettings = saved ? JSON.parse(saved) : {};
+        settings = { ...DEFAULT_SETTINGS, ...savedSettings };
+
+        const legacyDefaults = {
+            companyName: 'Dadodec Interiors',
+            location: '123 Dadodec Avenue, Indiranagar, Bangalore, Karnataka - 560038',
+            phone: '+91 98765 43210',
+            gstin: '29ABCDE1234F1Z5',
+            bankAccName: 'Dadodec Interiors Pvt Ltd',
+            bankName: 'HDFC Bank',
+            bankAccNo: '50200012345678',
+            bankIfsc: 'HDFC0001234',
+            bankUpi: 'dadodec@hdfcbank'
+        };
+        Object.keys(legacyDefaults).forEach(key => {
+            if (savedSettings[key] === legacyDefaults[key]) settings[key] = DEFAULT_SETTINGS[key];
+        });
         
         // Update UI labels for rates
         document.getElementById('lbl-rate-dry').textContent = settings.rateDry;
@@ -622,8 +661,10 @@
 
     function renderSettingsForm() {
         document.getElementById('set-company').value = settings.companyName;
+        document.getElementById('set-business').value = settings.businessName;
         document.getElementById('set-email').value = settings.email;
         document.getElementById('set-phone').value = settings.phone;
+        document.getElementById('set-registered-address').value = settings.registeredAddress;
         document.getElementById('set-location').value = settings.location;
         document.getElementById('set-website').value = settings.website;
         document.getElementById('set-warranty').value = settings.warranty;
@@ -642,12 +683,10 @@
         document.getElementById('set-terms').value = settings.terms;
         document.getElementById('set-payment').value = settings.payment || '';
 
-        if (settings.logoBase64) {
-            const img = document.getElementById('set-logo-preview');
-            img.src = settings.logoBase64;
-            img.classList.remove('hidden');
-            document.getElementById('set-logo-placeholder').classList.add('hidden');
-        }
+        const logoPreview = document.getElementById('set-logo-preview');
+        logoPreview.src = settings.logoBase64 || 'assets/dadodec-logo.png';
+        logoPreview.classList.remove('hidden');
+        document.getElementById('set-logo-placeholder').classList.add('hidden');
     }
 
     function handleLogoUpload(e) {
@@ -666,8 +705,10 @@
 
     function saveSettings() {
         settings.companyName = document.getElementById('set-company').value;
+        settings.businessName = document.getElementById('set-business').value;
         settings.email = document.getElementById('set-email').value;
         settings.phone = document.getElementById('set-phone').value;
+        settings.registeredAddress = document.getElementById('set-registered-address').value;
         settings.location = document.getElementById('set-location').value;
         settings.website = document.getElementById('set-website').value;
         settings.warranty = document.getElementById('set-warranty').value;
@@ -776,9 +817,7 @@
         calculateCosts();
         checkWizard();
         
-        // Generate new ID
-        const num = String(quotations.length + 1).padStart(4, '0');
-        currentQuotId = `DAD-QUOTE-${num}`;
+        currentQuotId = generateQuotationId();
         
         switchView('wizard');
     }
@@ -787,22 +826,24 @@
     // DOCUMENT EDITOR / PDF PREP
     // ─────────────────────────────────────────────────────────
     function prepareDocument() {
+        if (!currentQuotId) currentQuotId = generateQuotationId();
+
         // Branding
         const logoImg = document.getElementById('doc-logo');
         const logoTxt = document.getElementById('doc-logo-text');
-        if (settings.logoBase64) {
-            logoImg.src = settings.logoBase64;
-            logoImg.classList.remove('hidden');
-            logoTxt.classList.add('hidden');
-        } else {
-            logoImg.classList.add('hidden');
-            logoTxt.classList.remove('hidden');
-        }
+        logoImg.src = settings.logoBase64 || 'assets/dadodec-logo.png';
+        logoImg.classList.remove('hidden');
+        logoTxt.classList.add('hidden');
         
         document.getElementById('doc-company-name').textContent = settings.companyName;
+        document.getElementById('doc-company-business').textContent = settings.businessName;
         document.getElementById('doc-company-contact').textContent = `${settings.phone} | ${settings.email}`;
-        document.getElementById('doc-company-location').textContent = settings.location;
         document.getElementById('doc-company-gstin').textContent = `GSTIN: ${settings.gstin}`;
+        document.getElementById('doc-registered-address').textContent = settings.registeredAddress;
+        document.getElementById('doc-office-address').textContent = settings.location;
+        document.getElementById('doc-footer-phone').textContent = `Contact: ${settings.phone}`;
+        document.getElementById('doc-footer-email').textContent = `Email: ${settings.email}`;
+        document.getElementById('doc-footer-website').textContent = settings.website;
         document.getElementById('doc-sig-name').textContent = settings.companyName;
         
         // Meta
@@ -853,7 +894,9 @@
         document.getElementById('doc-bank-ifsc').textContent = settings.bankIfsc;
         
         const docBankUpi = document.getElementById('doc-bank-upi');
-        if(docBankUpi) docBankUpi.textContent = settings.bankUpi;
+        const docBankUpiRow = document.getElementById('doc-bank-upi-row');
+        if (docBankUpi) docBankUpi.textContent = settings.bankUpi;
+        if (docBankUpiRow) docBankUpiRow.classList.toggle('hidden', !settings.bankUpi);
         
         const docPayment = document.getElementById('doc-payment');
         if(docPayment) docPayment.textContent = settings.payment;
@@ -864,25 +907,55 @@
         switchView('editor');
     }
 
-    function generatePDF() {
+    async function generatePDF() {
         const el = document.getElementById('print-sheet');
+        const button = document.querySelector('button[onclick="generatePDF()"]');
         const opt = {
             margin:       0,
             filename:     `${currentQuotId}_${wizardState.name.replace(/\s+/g,'_')}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { scale: 2, useCORS: true, logging: false },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak:    { mode: ['css', 'legacy'], avoid: '.doc-keep-together' }
         };
         
         // Temporarily remove contenteditable for clean PDF
         const editables = el.querySelectorAll('[contenteditable="true"]');
         editables.forEach(n => n.removeAttribute('contenteditable'));
-        
-        html2pdf().set(opt).from(el).save().then(() => {
-            editables.forEach(n => n.setAttribute('contenteditable', 'true'));
+        el.classList.add('pdf-exporting');
+
+        if (button) button.disabled = true;
+        let pdfUrl = null;
+        try {
+            await Promise.all([
+                el.querySelector('#doc-logo').decode(),
+                el.querySelector('#doc-signature').decode()
+            ]);
+            const pdfBlob = await html2pdf().set(opt).from(el).outputPdf('blob');
+            if (!(pdfBlob instanceof Blob) || pdfBlob.size === 0) {
+                throw new Error('PDF export returned an empty file.');
+            }
+
+            pdfUrl = URL.createObjectURL(pdfBlob);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = pdfUrl;
+            downloadLink.download = opt.filename;
+            downloadLink.style.display = 'none';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            downloadLink.remove();
+
             saveQuotation('generated');
             showToast('📥 PDF Downloaded Successfully');
-        });
+        } catch (error) {
+            console.error('PDF generation failed:', error);
+            showToast('PDF generation failed. Please try again.');
+        } finally {
+            if (pdfUrl) setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000);
+            el.classList.remove('pdf-exporting');
+            editables.forEach(n => n.setAttribute('contenteditable', 'true'));
+            if (button) button.disabled = false;
+        }
     }
 
     function printPDF() {
@@ -891,7 +964,7 @@
     }
 
     function shareQuotation() {
-        const text = `Dadodec Interiors Quotation for ${wizardState.name}\nID: ${currentQuotId}\nTotal: ₹${fmtMoney(wizardState.totalCost)}\n\nPlease find the PDF attached or request a copy.`;
+        const text = `${settings.companyName} Quotation for ${wizardState.name}\nID: ${currentQuotId}\nTotal: ₹${fmtMoney(wizardState.totalCost)}\n\nPlease find the PDF attached or request a copy.`;
         if (navigator.share) {
             navigator.share({ title: `Quotation ${currentQuotId}`, text });
             saveQuotation('sent');
@@ -904,6 +977,25 @@
     // ─────────────────────────────────────────────────────────
     // DASHBOARD & HISTORY
     // ─────────────────────────────────────────────────────────
+    function generateQuotationId() {
+        const sequenceKey = 'dadodec_quote_sequence';
+        const storedSequence = Number.parseInt(localStorage.getItem(sequenceKey), 10) || 664;
+        const existingSequence = quotations.reduce((max, quote) => {
+            const match = /^DAD-\d{4}-(\d+)$/.exec(quote.id);
+            return match ? Math.max(max, Number.parseInt(match[1], 10)) : max;
+        }, 0);
+        let sequence = Math.max(storedSequence, existingSequence);
+        let id;
+
+        do {
+            sequence += 1;
+            id = `DAD-${new Date().getFullYear()}-${String(sequence).padStart(3, '0')}`;
+        } while (quotations.some(quote => quote.id === id));
+
+        localStorage.setItem(sequenceKey, String(sequence));
+        return id;
+    }
+
     function loadQuotations() {
         const saved = localStorage.getItem('dadodec_unified_quotes');
         quotations = saved ? JSON.parse(saved) : [];
