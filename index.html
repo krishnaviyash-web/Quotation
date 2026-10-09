@@ -24,6 +24,7 @@
                     },
                     fontFamily: { sans:['Poppins','sans-serif'], serif:['Cinzel','serif'] }
                 }
+
             }
         }
     </script>
@@ -58,15 +59,19 @@
         #print-sheet .doc-table th, #print-sheet .doc-table td { padding: 5px 7px; vertical-align: top; overflow-wrap: anywhere; }
         #print-sheet .doc-table td.ce-field { display: table-cell; min-width: 0; }
         #print-sheet .doc-table th { line-height: 1.3; }
-        #print-sheet .doc-table th:nth-child(1), #print-sheet .doc-table td:nth-child(1) { width: 22%; }
-        #print-sheet .doc-table th:nth-child(2), #print-sheet .doc-table td:nth-child(2) { width: 38%; }
-        #print-sheet .doc-table th:nth-child(3), #print-sheet .doc-table td:nth-child(3) { width: 12%; }
-        #print-sheet .doc-table th:nth-child(4), #print-sheet .doc-table td:nth-child(4) { width: 14%; }
-        #print-sheet .doc-table th:nth-child(5), #print-sheet .doc-table td:nth-child(5) { width: 14%; }
+        #doc-custom-items-wrap .doc-table th:nth-child(1), #doc-custom-items-wrap .doc-table td:nth-child(1) { width: 22%; }
+        #doc-custom-items-wrap .doc-table th:nth-child(2), #doc-custom-items-wrap .doc-table td:nth-child(2) { width: 34%; }
+        #doc-custom-items-wrap .doc-table th:nth-child(3), #doc-custom-items-wrap .doc-table td:nth-child(3) { width: 16%; }
+        #doc-custom-items-wrap .doc-table th:nth-child(4), #doc-custom-items-wrap .doc-table td:nth-child(4) { width: 14%; }
+        #doc-custom-items-wrap .doc-table th:nth-child(5), #doc-custom-items-wrap .doc-table td:nth-child(5) { width: 14%; }
+        #doc-package-scope > div { break-inside: avoid; page-break-inside: avoid; padding: 6px; }
+        #print-sheet .doc-table thead { display: table-header-group; }
+        #print-sheet .doc-table tr { break-inside: avoid; page-break-inside: avoid; }
+        #print-sheet section > h3 { break-after: avoid; page-break-after: avoid; }
+        #print-sheet .doc-keep-together { break-inside: avoid; page-break-inside: avoid; }
         #print-sheet td[id^="doc-sum-"] { padding-top: 3px; padding-bottom: 3px; }
         #print-sheet #doc-sum-total { padding-top: 7px; padding-bottom: 7px; }
         #print-sheet .doc-company-heading { font-size: 16px; line-height: 1.3; }
-        #print-sheet .doc-keep-together { break-inside: avoid; page-break-inside: avoid; }
         #print-sheet.pdf-exporting .ce-field { background: transparent !important; border-color: transparent !important; box-shadow: none !important; transition: none !important; }
         #print-wrap { overflow-x: auto; padding: 0 16px 16px; }
         .ce-field { outline: none; border-radius: 4px; border: 1px solid transparent; transition: all 0.2s; min-height: 1em; display: inline-block; min-width: 20px; }
@@ -75,6 +80,21 @@
         
         .doc-table th { background: #0f172a; color: #d4af37; padding: 10px 12px; font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; text-align: left; }
         .doc-table td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 11px; }
+
+        .editor-action-bar { width: max-content; max-width: calc(100vw - 24px); flex-wrap: wrap; justify-content: center; }
+        .toolbar-help { display: none; }
+        @media (max-width: 640px) {
+            #view-editor .editor-action-bar { left: 12px; right: 12px; bottom: 12px; width: auto; max-width: none; transform: none; border-radius: 16px; padding: 10px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+            #view-editor .editor-action-bar button { min-height: 44px; justify-content: center; white-space: nowrap; }
+            #view-editor .editor-action-bar .toolbar-divider { display: none; }
+            #view-editor .editor-action-bar .toolbar-edit { order: 3; }
+            #view-editor .editor-action-bar .toolbar-save { order: 4; }
+            #view-editor .editor-action-bar .toolbar-share { order: 5; }
+            #view-editor .editor-action-bar .toolbar-print { order: 2; }
+            #view-editor .editor-action-bar .toolbar-download { order: 1; margin-left: 0; }
+            #view-editor .editor-action-bar .toolbar-help { display: block; order: 6; grid-column: 1 / -1; color: #cbd5e1; font-size: 11px; line-height: 1.4; text-align: center; }
+            #view-editor .editor-print-guide { display: none; }
+        }
 
         @media print {
             body * { visibility: hidden; }
@@ -133,9 +153,12 @@
                         <h2 class="text-2xl font-serif font-bold text-slate-900">Quotation History</h2>
                         <p class="text-slate-500 text-sm mt-1">Manage and track all generated quotations.</p>
                     </div>
-                    <button onclick="startNewQuotation()" class="btn-gold px-5 py-2.5 rounded-lg text-sm flex items-center gap-2">
-                        <i class="ph ph-plus font-bold"></i> Create Quotation
-                    </button>
+                    <div class="flex flex-wrap gap-2 justify-end">
+                        <button onclick="openPriceCatalogue('dashboard')" class="px-4 py-2.5 rounded-lg text-sm font-bold border border-slate-300 bg-white"><i class="ph ph-magnifying-glass mr-1"></i> Quick Price Reference</button>
+                        <button onclick="startNewQuotation()" class="btn-gold px-5 py-2.5 rounded-lg text-sm flex items-center gap-2">
+                            <i class="ph ph-plus font-bold"></i> Create Quotation
+                        </button>
+                    </div>
                 </div>
                 
                 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -161,7 +184,22 @@
             <div id="view-wizard" class="hidden p-8 max-w-4xl mx-auto pb-24">
                 <div class="mb-8">
                     <h2 class="text-3xl font-serif font-bold text-slate-900">Interior Cost Calculator</h2>
-                    <p class="text-slate-500 mt-2">Enter the property details to automatically calculate costs and prepare the quotation document.</p>
+                    <p class="text-slate-500 mt-2">Prepare a complete-home package or a measured estimate for selected rooms and items.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+                    <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+                        <h3 class="text-lg font-bold text-slate-800">Choose Quotation Type</h3>
+                        <button type="button" onclick="openPriceCatalogue('wizard')" class="text-sm font-bold text-gold-700 hover:text-gold-800"><i class="ph ph-magnifying-glass mr-1"></i>Quick Price Reference</button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button type="button" id="mode-standard" onclick="setQuotationMode('standard')" class="text-left rounded-xl border-2 border-slate-200 p-4 hover:border-gold-400">
+                            <strong class="block">Standard Package</strong><span class="text-xs text-slate-500">Full-home BHK package with included scope.</span>
+                        </button>
+                        <button type="button" id="mode-manual" onclick="setQuotationMode('manual')" class="text-left rounded-xl border-2 border-slate-200 p-4 hover:border-gold-400">
+                            <strong class="block">Manual Estimate</strong><span class="text-xs text-slate-500">Only selected items and measured quantities.</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Step 1: Details -->
@@ -178,58 +216,93 @@
                         <div><label class="form-label">Project Location *</label><input type="text" id="wiz-location" class="form-input" placeholder="e.g. Whitefield, Bangalore" oninput="checkWizard()"></div>
                     </div>
 
-                    <label class="form-label mb-3">Select Property Type *</label>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="wiz-property-grid">
-                        <!-- JS injects property cards here -->
+                    <div id="home-type-field" class="max-w-md">
+                        <label class="form-label" for="wiz-property-type">Home Type *</label>
+                        <select id="wiz-property-type" class="form-input" onchange="selectProperty(this.value)">
+                            <option value="">Select home type</option>
+                            <option value="1 BHK">1 BHK</option>
+                            <option value="2 BHK">2 BHK</option>
+                            <option value="3 BHK">3 BHK</option>
+                            <option value="4 BHK">4 BHK</option>
+                        </select>
                     </div>
                 </div>
 
-                <!-- Step 2: Area & Cost -->
+                <!-- Step 2: Standard Package & Additional Requirements -->
                 <div id="wizard-step-2" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-6 opacity-50 pointer-events-none transition-opacity">
                     <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
                         <span class="w-6 h-6 rounded-full bg-gold-500 text-slate-900 flex items-center justify-center text-xs">2</span>
-                        Area &amp; Cost Calculation
+                        <span id="wizard-items-heading">Standard Package &amp; Additional Requirements</span>
                     </h3>
                     
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div id="standard-package-section">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                            <label class="form-label">Total Area (sq.ft) *</label>
-                            <input type="number" id="wiz-total-area" class="form-input font-bold text-lg" placeholder="e.g. 1200" oninput="calculateCosts()">
+                            <label id="wiz-area-label" class="form-label" for="wiz-total-area">Customer Property Area (sq.ft) *</label>
+                            <input type="number" min="0" step="any" id="wiz-total-area" class="form-input font-bold text-lg" placeholder="e.g. 1200" oninput="calculateCosts()">
+                            <p class="text-xs text-slate-500 mt-1">For reference only; this area does not determine the package price.</p>
                         </div>
-                        <div>
-                            <label class="form-label">Area Split Mode</label>
-                            <select id="wiz-split-mode" class="form-input" onchange="calculateCosts()">
-                                <option value="auto">Auto (80% Dry / 20% Wet)</option>
-                                <option value="custom">Custom Manual Split</option>
-                            </select>
+                        <div id="property-area-warning" class="hidden rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm font-medium text-amber-800" role="status"></div>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 mb-6">
+                        <h4 class="font-bold uppercase tracking-wider text-sm text-slate-700 mb-4">Standard Package</h4>
+                        <p id="package-config-error" class="hidden rounded-lg border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700 mb-4" role="alert">Standard package configuration is incomplete. Please contact the administrator before generating the quotation.</p>
+                        <p id="wiz-package-name" class="font-semibold text-slate-800 mb-4">Select a home type to see package pricing.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="rounded-lg border border-emerald-100 bg-white p-4">
+                                <div class="text-sm font-bold text-emerald-800 mb-3">Dry Package Area</div>
+                                <div class="flex justify-between text-sm"><span>Standard area</span><strong id="wiz-dry-area-display">—</strong></div>
+                                <div class="flex justify-between text-sm mt-2"><span>Rate</span><strong id="wiz-dry-rate-display">—</strong></div>
+                                <div class="flex justify-between text-sm mt-2 border-t pt-2"><span>Dry amount</span><strong id="wiz-dry-cost">₹0</strong></div>
+                            </div>
+                            <div class="rounded-lg border border-sky-100 bg-white p-4">
+                                <div class="text-sm font-bold text-sky-800 mb-3">Wet Package Area</div>
+                                <div class="flex justify-between text-sm"><span>Standard area</span><strong id="wiz-wet-area-display">—</strong></div>
+                                <div class="flex justify-between text-sm mt-2"><span>Rate</span><strong id="wiz-wet-rate-display">—</strong></div>
+                                <div class="flex justify-between text-sm mt-2 border-t pt-2"><span>Wet amount</span><strong id="wiz-wet-cost">₹0</strong></div>
+                            </div>
+                        </div>
+                        <div class="mt-5 pt-4 border-t border-slate-200 flex justify-between items-center">
+                            <div class="text-slate-500 font-bold uppercase tracking-wider text-sm">Standard Package Value</div>
+                            <div class="font-serif font-black text-2xl gold-text" id="wiz-package-total">₹0</div>
+                        </div>
+                        <div class="mt-5">
+                            <h5 class="font-bold uppercase tracking-wider text-xs text-slate-500 mb-2">What's Included</h5>
+                            <div id="wiz-package-scope" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700"></div>
+                        </div>
+                    </div>
+                        </div>
+
+                        <div class="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+                            <div class="flex items-center justify-between gap-4 mb-4">
+                                <div>
+                                    <h4 id="manual-items-heading" class="font-bold uppercase tracking-wider text-sm text-slate-700">Additional / Custom Requirements</h4>
+                                    <p id="manual-items-description" class="text-xs text-slate-500 mt-1">Only items added here are charged in addition to the package.</p>
+                                </div>
+                                <div class="flex flex-wrap justify-end gap-2">
+                                    <button type="button" onclick="openPriceCatalogue('wizard')" class="px-3 py-2 rounded-lg text-xs font-bold border border-slate-300"><i class="ph ph-magnifying-glass mr-1"></i>Catalogue</button>
+                                    <button type="button" onclick="addCustomItem()" class="btn-gold px-4 py-2 rounded-lg text-xs font-bold shrink-0"><i class="ph ph-plus mr-1"></i><span id="add-item-button-label">Add Item</span></button>
+                                </div>
+                            </div>
+                            <p id="catalogue-price-disclaimer" class="hidden text-xs rounded-lg bg-amber-50 text-amber-900 p-3 mb-4">Indicative reference price — confirm specifications, measurements, material, hardware, installation and final scope before committing to the customer.</p>
+                            <div id="custom-items-list" class="space-y-4"></div>
+                            <p id="custom-items-empty" class="text-sm text-slate-500">No additional requirements.</p>
+                        <p id="custom-items-error" class="hidden text-sm font-semibold text-red-700 mt-3" role="alert">Complete or remove each additional requirement before generating the quotation.</p>
+                        <div class="flex justify-between border-t border-slate-200 pt-3 mt-4 font-bold">
+                            <span>Additional Requirements Total</span><span id="wiz-additional-total">₹0</span>
                         </div>
                     </div>
 
-                    <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <!-- Dry Area -->
-                            <div>
-                                <div class="flex justify-between items-center mb-2">
-                                    <label class="form-label !mb-0 text-slate-700">Dry Area (sq.ft)</label>
-                                    <span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded">@ ₹<span id="lbl-rate-dry">1249</span>/sqft</span>
-                                </div>
-                                <input type="number" id="wiz-dry-area" class="form-input mb-2 bg-white" readonly oninput="calculateCosts(true)">
-                                <div class="text-right text-sm font-semibold text-slate-600" id="wiz-dry-cost">₹0</div>
-                            </div>
-                            <!-- Wet Area -->
-                            <div>
-                                <div class="flex justify-between items-center mb-2">
-                                    <label class="form-label !mb-0 text-slate-700">Wet Area (sq.ft)</label>
-                                    <span class="text-[10px] font-bold text-sky-600 bg-sky-50 px-2 py-1 rounded">@ ₹<span id="lbl-rate-wet">1349</span>/sqft</span>
-                                </div>
-                                <input type="number" id="wiz-wet-area" class="form-input mb-2 bg-white" readonly oninput="calculateCosts(true)">
-                                <div class="text-right text-sm font-semibold text-slate-600" id="wiz-wet-cost">₹0</div>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-6 pt-6 border-t border-slate-200 flex justify-between items-center">
-                            <div class="text-slate-500 font-bold uppercase tracking-wider text-sm">Total Estimated Cost</div>
-                            <div class="font-serif font-black text-3xl gold-text" id="wiz-total-cost">₹0</div>
+                    <div class="bg-slate-900 text-white rounded-xl p-5">
+                        <div id="summary-package-row" class="flex justify-between text-sm"><span>Standard Package</span><strong id="wiz-subtotal-package">₹0</strong></div>
+                        <div id="summary-items-row" class="flex justify-between text-sm mt-2"><span id="summary-items-label">Additional Requirements</span><strong id="wiz-subtotal-additional">₹0</strong></div>
+                        <div id="summary-discount-row" class="hidden flex justify-between items-center text-sm mt-2"><label for="wiz-discount-input">Authorized Discount (₹)</label><input id="wiz-discount-input" type="number" min="0" step="any" class="form-input !w-40 !py-1 text-slate-900 text-right" value="0" oninput="updateQuoteDiscount(this.value)"></div>
+                        <div class="flex justify-between text-sm mt-2"><span>Taxable Subtotal (excl. GST)</span><strong id="wiz-total-cost">₹0</strong></div>
+                        <div class="flex justify-between text-sm mt-2"><span id="wiz-gst-label">GST</span><strong id="wiz-gst-amount">₹0</strong></div>
+                        <div class="mt-4 pt-4 border-t border-slate-700 flex justify-between items-center">
+                            <div class="font-bold uppercase tracking-wider text-sm">Grand Total</div>
+                            <div class="font-serif font-black text-2xl text-gold-400" id="wiz-grand-total">₹0</div>
                         </div>
                     </div>
 
@@ -246,7 +319,7 @@
                 <div class="mb-8 flex justify-between items-end">
                     <div>
                         <h2 class="text-2xl font-serif font-bold text-slate-900">System Settings</h2>
-                        <p class="text-slate-500 text-sm mt-1">Configure company profile, bank details, and fixed pricing rates.</p>
+                        <p class="text-slate-500 text-sm mt-1">Configure company profile, bank details, and standard interior packages.</p>
                     </div>
                     <button onclick="saveSettings()" class="btn-gold px-6 py-2.5 rounded-lg text-sm flex items-center gap-2">
                         <i class="ph ph-floppy-disk text-lg"></i> Save Settings
@@ -298,20 +371,29 @@
                         </div>
                     </div>
 
-                    <!-- Fixed Pricing -->
-                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                        <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-5 border-b border-slate-100 pb-2">Fixed Pricing Rates</h3>
-                        <p class="text-xs text-slate-500 mb-4">Set the permanent calculation rates for dry and wet areas.</p>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="form-label">Dry Area Rate (₹ / sq.ft)</label>
-                                <input type="number" id="set-rate-dry" class="form-input font-bold text-emerald-700 bg-emerald-50 border-emerald-200">
-                            </div>
-                            <div>
-                                <label class="form-label">Wet Area Rate (₹ / sq.ft)</label>
-                                <input type="number" id="set-rate-wet" class="form-input font-bold text-sky-700 bg-sky-50 border-sky-200">
-                            </div>
+                    <!-- Standard Package Pricing -->
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm md:col-span-2">
+                        <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400 mb-2 border-b border-slate-100 pb-2">Standard Package Settings</h3>
+                        <p class="text-xs text-slate-500 mb-5">Edit package measurements, rates, and included scope. Enter one room per line using “Room: Item | Item”.</p>
+                        <div id="package-settings-list" class="grid grid-cols-1 lg:grid-cols-2 gap-5"></div>
+                        <div class="mt-6 max-w-sm">
+                            <label class="form-label" for="set-gst-rate">GST Rate (%)</label>
+                            <input type="number" min="0" step="any" id="set-gst-rate" class="form-input" value="0">
+                            <p class="text-xs text-slate-500 mt-1">GST is calculated on the taxable subtotal; item prices are exclusive of GST.</p>
+                            <label class="flex items-center gap-2 text-sm mt-4"><input type="checkbox" id="set-discounts-enabled"> Allow authorized per-quotation discounts</label>
+                            <p class="text-xs text-slate-500 mt-1">Discounts are disabled until management authorizes their use.</p>
                         </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm md:col-span-2">
+                        <div class="flex flex-wrap items-center justify-between gap-3 mb-2 border-b border-slate-100 pb-2">
+                            <div>
+                                <h3 class="text-sm font-bold uppercase tracking-widest text-slate-400">Quick Price Reference Catalogue</h3>
+                                <p class="text-xs text-slate-500 mt-1">Reference estimates only; not approved selling rates or validated production costs.</p>
+                            </div>
+                            <button type="button" onclick="addCatalogueSetting()" class="px-3 py-2 text-xs font-bold border border-slate-300 rounded-lg">Add Catalogue Item</button>
+                        </div>
+                        <div id="catalogue-settings-list" class="space-y-4"></div>
                     </div>
 
                     <!-- Bank Details -->
@@ -350,27 +432,29 @@
             <div id="view-editor" class="hidden pb-24 bg-slate-200 min-h-full py-10 relative">
                 
                 <!-- Floating Toolbar for Editor -->
-                <div class="no-print fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 rounded-full shadow-2xl px-6 py-3 flex items-center gap-4 z-40 border border-slate-700">
-                    <button onclick="switchView('wizard')" class="text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1 transition">
+                <div class="no-print editor-action-bar fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900 rounded-full shadow-2xl px-6 py-3 flex items-center gap-4 z-40 border border-slate-700" role="group" aria-label="Quotation actions">
+                    <button onclick="switchView('wizard')" class="toolbar-edit text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1 transition">
                         <i class="ph ph-arrow-left"></i> Edit Data
                     </button>
-                    <div class="w-px h-6 bg-slate-700"></div>
-                    <button onclick="saveQuotation('draft')" class="text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1 transition">
+                    <div class="toolbar-divider w-px h-6 bg-slate-700"></div>
+                    <button onclick="saveQuotation('draft')" class="toolbar-save text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1 transition">
                         <i class="ph ph-floppy-disk"></i> Save Draft
                     </button>
-                    <button onclick="shareQuotation()" class="text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1 transition">
+                    <button onclick="shareQuotation()" class="toolbar-share text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1 transition">
                         <i class="ph ph-share-network"></i> Share
                     </button>
-                    <button onclick="printPDF()" class="text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1 transition">
+                    <button onclick="printPDF()" title="Open your browser's print dialog; choose a printer or Save as PDF." aria-label="Print quotation or save as PDF" class="toolbar-print text-slate-300 hover:text-white text-xs font-bold flex items-center gap-1 transition">
                         <i class="ph ph-printer"></i> Print
                     </button>
-                    <button onclick="generatePDF()" class="bg-gold-500 text-slate-900 hover:bg-gold-400 px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition shadow-[0_0_15px_rgba(212,175,55,0.4)] ml-2">
-                        <i class="ph ph-file-pdf text-base"></i> Generate PDF
+                    <button onclick="generatePDF()" title="Download a PDF copy of this quotation." aria-label="Download quotation PDF" class="toolbar-download bg-gold-500 text-slate-900 hover:bg-gold-400 px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 transition shadow-[0_0_15px_rgba(212,175,55,0.4)] ml-2">
+                        <i class="ph ph-file-pdf text-base"></i> Download PDF
                     </button>
+                    <p class="toolbar-help">Download PDF saves a copy. Print opens the print dialog; choose a printer or “Save as PDF”.</p>
                 </div>
 
-                <div class="text-center no-print mb-6">
-                    <p class="text-slate-500 text-sm font-medium"><i class="ph ph-info mr-1"></i> You can click on any text inside the document below to make manual edits before generating the PDF.</p>
+                <div class="editor-print-guide text-center no-print mb-6">
+                    <p class="text-slate-700 text-sm font-semibold"><i class="ph ph-info mr-1"></i> Ready to finish? Review the quotation, then choose <strong>Download PDF</strong> for a file or <strong>Print</strong> to print it or select “Save as PDF”.</p>
+                    <p class="text-slate-500 text-xs mt-1">Tip: You can click editable text in the quotation to make a final change before downloading or printing.</p>
                 </div>
 
                 <!-- The A4 Sheet -->
@@ -391,6 +475,7 @@
                             </div>
                             <div class="text-right">
                                 <h2 class="text-2xl font-serif font-black text-gold-500 uppercase tracking-widest ce-field" contenteditable="true">QUOTATION</h2>
+                                <p id="doc-quotation-type" class="text-[9px] font-bold uppercase text-slate-700 mt-1"></p>
                                 <div class="mt-2 text-[9px] text-slate-600 space-y-0.5">
                                     <p><span class="font-bold text-slate-800">Quotation No:</span> <span class="ce-field" id="doc-quote-no" contenteditable="true"></span></p>
                                     <p><span class="font-bold text-slate-800">Date:</span> <span class="ce-field" id="doc-date" contenteditable="true"></span></p>
@@ -415,56 +500,54 @@
                             </div>
                         </div>
 
-                        <!-- Quotation Item Table -->
-                        <div class="doc-keep-together mb-4 border border-slate-200 rounded-lg overflow-hidden">
+                        <section id="doc-package-calculation" class="mb-4 border border-gold-200 rounded-lg overflow-hidden">
+                            <div class="bg-gold-50 px-4 py-3">
+                                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-900">Dadodec Standard Interior Package</h3>
+                                <p class="text-[10px] text-slate-600 mt-1"><span id="doc-package-name"></span></p>
+                            </div>
                             <table class="w-full doc-table">
-                                <thead class="bg-slate-900 text-gold-400">
-                                    <tr>
-                                        <th style="width:22%">Room / Area</th>
-                                        <th style="width:38%">Description</th>
-                                        <th class="text-center" style="width:12%">Qty</th>
-                                        <th class="text-right" style="width:14%">Rate</th>
-                                        <th class="text-right" style="width:14%">Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-200">
-                                    <tr>
-                                        <td class="font-bold text-slate-800 ce-field align-top" contenteditable="true">Dry Area</td>
-                                        <td class="text-slate-600 ce-field text-[10px] align-top leading-relaxed" contenteditable="true">Complete interior execution for all dry zones including living, dining, and bedrooms as per finalized design.</td>
-                                        <td class="text-center text-slate-600 ce-field align-top" id="doc-tbl-dry-sqft" contenteditable="true"></td>
-                                        <td class="text-right text-slate-600 ce-field align-top" id="doc-tbl-dry-rate" contenteditable="true"></td>
-                                        <td class="text-right font-bold text-slate-800 ce-field align-top" id="doc-tbl-dry-amt" contenteditable="true"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="font-bold text-slate-800 ce-field align-top" contenteditable="true">Wet Area</td>
-                                        <td class="text-slate-600 ce-field text-[10px] align-top leading-relaxed" contenteditable="true">Complete interior execution for wet zones including kitchen and bathrooms with water-resistant materials.</td>
-                                        <td class="text-center text-slate-600 ce-field align-top" id="doc-tbl-wet-sqft" contenteditable="true"></td>
-                                        <td class="text-right text-slate-600 ce-field align-top" id="doc-tbl-wet-rate" contenteditable="true"></td>
-                                        <td class="text-right font-bold text-slate-800 ce-field align-top" id="doc-tbl-wet-amt" contenteditable="true"></td>
-                                    </tr>
+                                <thead><tr><th style="width:52%">Standard Package Calculation</th><th class="text-right" style="width:24%">Area × Rate</th><th class="text-right" style="width:24%">Amount</th></tr></thead>
+                                <tbody>
+                                    <tr><td class="font-bold">Dry Package Area</td><td class="text-right" id="doc-package-dry-basis"></td><td class="text-right font-bold" id="doc-package-dry-amount"></td></tr>
+                                    <tr><td class="font-bold">Wet Package Area</td><td class="text-right" id="doc-package-wet-basis"></td><td class="text-right font-bold" id="doc-package-wet-amount"></td></tr>
+                                    <tr class="border-t-2 border-slate-900"><td colspan="2" class="font-bold uppercase">Standard Package Value</td><td class="text-right font-bold text-gold-700" id="doc-package-total"></td></tr>
                                 </tbody>
                             </table>
-                        </div>
+                        </section>
+
+                        <section id="doc-package-scope-section" class="mb-4">
+                            <h3 class="text-[10px] font-bold uppercase tracking-wider text-slate-800 border-b border-slate-200 pb-1 mb-2">Standard Interiors Included</h3>
+                            <div id="doc-package-scope" class="grid grid-cols-2 gap-x-4 gap-y-2 text-[9px] text-slate-700"></div>
+                        </section>
+
+                        <section class="mb-4">
+                            <h3 id="doc-items-heading" class="text-[10px] font-bold uppercase tracking-wider text-slate-800 border-b border-slate-200 pb-1 mb-2">Additional / Custom Requirements</h3>
+                            <p id="doc-no-custom-items" class="text-[9px] text-slate-500">No additional requirements</p>
+                            <div id="doc-custom-items-wrap" class="hidden border border-slate-200 rounded-lg overflow-hidden">
+                                <table class="w-full doc-table">
+                                    <thead><tr><th>Room / Item</th><th>Description / Finish</th><th class="text-right">Qty / Unit</th><th class="text-right">Rate</th><th class="text-right">Amount</th></tr></thead>
+                                    <tbody id="doc-custom-items"></tbody>
+                                </table>
+                            </div>
+                        </section>
+
+                        <p id="doc-estimate-note" class="text-[8px] leading-relaxed text-slate-500 border-l-2 border-gold-500 pl-2 mb-4">
+                            Estimate is based on the standard interior package and standard package measurements applicable to the selected home type. Additional/custom requirements, upgrades or items outside the standard package may be charged separately.
+                        </p>
 
                         <!-- Cost Summary -->
                         <div class="doc-keep-together flex justify-end mb-5">
                             <div class="w-1/2">
                                 <table class="w-full text-[10px]">
                                     <tr>
-                                        <td class="py-1 text-slate-600">Subtotal</td>
+                                        <td id="doc-subtotal-label" class="py-1 text-slate-600">Items Subtotal</td>
                                         <td class="py-1 text-right font-bold text-slate-800 ce-field" id="doc-sum-subtotal" contenteditable="true"></td>
                                     </tr>
+                                    <tr id="doc-discount-row" class="hidden"><td class="py-1 text-slate-600">Authorized Discount</td><td class="py-1 text-right font-bold text-slate-800" id="doc-sum-discount"></td></tr>
+                                    <tr><td class="py-1 text-slate-600">Taxable Subtotal (excl. GST)</td><td class="py-1 text-right font-bold text-slate-800" id="doc-sum-taxable"></td></tr>
                                     <tr>
-                                        <td class="py-1 text-slate-600">Discount</td>
-                                        <td class="py-1 text-right font-bold text-slate-800 ce-field" id="doc-sum-discount" contenteditable="true">₹0</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="py-1 text-slate-600">Taxable Value</td>
-                                        <td class="py-1 text-right font-bold text-slate-800 ce-field" id="doc-sum-taxable" contenteditable="true"></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="py-1 text-slate-600 ce-field" contenteditable="true">GST</td>
-                                        <td class="py-1 text-right font-bold text-slate-800 ce-field" id="doc-sum-gst" contenteditable="true">₹0</td>
+                                        <td class="py-1 text-slate-600" id="doc-gst-label">GST</td>
+                                        <td class="py-1 text-right font-bold text-slate-800" id="doc-sum-gst"></td>
                                     </tr>
                                     <tr class="border-t-2 border-slate-900">
                                         <td class="py-3 font-bold uppercase tracking-widest text-slate-900 text-[11px]">Grand Total</td>
@@ -547,6 +630,24 @@
     </main>
 
     <!-- Toast -->
+    <div id="catalogue-modal" class="hidden fixed inset-0 z-50 bg-slate-950/60 p-3 sm:p-8" role="dialog" aria-modal="true" aria-labelledby="catalogue-title">
+        <div class="max-w-5xl max-h-full overflow-y-auto mx-auto bg-white rounded-2xl shadow-2xl p-5 sm:p-7">
+            <div class="flex flex-wrap justify-between items-start gap-3 mb-5">
+                <div><h2 id="catalogue-title" class="text-2xl font-serif font-bold">Quick Price Reference</h2><p class="text-xs text-slate-500 mt-1">Indicative Bengaluru-market reference estimates, not approved selling rates or verified execution costs.</p></div>
+                <button type="button" onclick="closePriceCatalogue()" class="text-slate-500 hover:text-slate-900 text-xl" aria-label="Close catalogue">&times;</button>
+            </div>
+            <p class="text-xs rounded-lg bg-amber-50 text-amber-900 p-3 mb-4">Indicative reference price — confirm specifications, measurements, material, hardware, installation and final scope before committing to the customer.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+                <input id="catalogue-search" type="search" class="form-input" placeholder="Search items" oninput="renderPriceCatalogue()">
+                <select id="catalogue-room-filter" class="form-input" onchange="renderPriceCatalogue()"><option value="">All rooms</option></select>
+                <select id="catalogue-category-filter" class="form-input" onchange="renderPriceCatalogue()"><option value="">All categories</option></select>
+                <div class="flex gap-2"><select id="catalogue-unit-filter" class="form-input" onchange="renderPriceCatalogue()"><option value="">All units</option></select><select id="catalogue-sort" class="form-input" onchange="renderPriceCatalogue()"><option value="name">Name</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option></select></div>
+            </div>
+            <div id="catalogue-results" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+            <p id="catalogue-empty" class="hidden text-center text-sm text-slate-500 p-8">No matching active catalogue items.</p>
+        </div>
+    </div>
+
     <div class="toast" id="toast"></div>
 
     <script>
@@ -575,19 +676,102 @@
         bankBranch: '',
         bankUpi: '',
         payment: '10% Advance on Booking\n40% on Material Procurement\n45% on Execution\n5% on Final Handover',
-        rateDry: 1249,
-        rateWet: 1349,
+        gstRate: 0,
+        discountsEnabled: false,
+        catalogue: [],
+        packages: {},
         terms: '1. This quotation is valid for 30 days.\n2. 50% advance payment required to commence work.\n3. Final cost is subject to actual site measurements.\n4. Design changes after approval may incur additional costs.'
     };
 
-    const HOME_TYPES = ['1 BHK', '2 BHK', '3 BHK', '4 BHK', 'Villa', 'Duplex', 'Commercial'];
+    const HOME_TYPES = ['1 BHK', '2 BHK', '3 BHK', '4 BHK'];
+    const HOME_TYPE_IDS = { '1 BHK': '1BHK', '2 BHK': '2BHK', '3 BHK': '3BHK', '4 BHK': '4BHK' };
+    const STANDARD_PACKAGES = {
+        '1BHK': {
+            name: '1 BHK Standard Interior Package',
+            dryArea: 292,
+            wetArea: 100,
+            dryRate: 1249,
+            wetRate: 1349,
+            inclusions: {
+                livingRoom: ['TV Unit', 'Standard TV Panel / Storage', 'Standard False Ceiling'],
+                kitchen: ['Modular Kitchen', 'Base Units', 'Wall Units', 'Standard Kitchen Storage'],
+                bedroom1: ['Wardrobe', 'Loft', 'Dresser / Mirror Provision'],
+                entrance: ['Shoe / Storage Unit']
+            }
+        },
+        '2BHK': {
+            name: '2 BHK Standard Interior Package',
+            dryArea: 420,
+            wetArea: 120,
+            dryRate: 1249,
+            wetRate: 1349,
+            inclusions: {
+                livingRoom: ['TV Unit', 'Standard TV Panel / Storage', 'Standard False Ceiling', 'Shoe / Storage Unit'],
+                kitchen: ['Modular Kitchen', 'Base Units', 'Wall Units', 'Standard Kitchen Storage'],
+                bedroom1: ['Wardrobe', 'Loft', 'Dresser / Mirror Provision'],
+                bedroom2: ['Wardrobe', 'Loft', 'Dresser / Mirror Provision']
+            }
+        },
+        '3BHK': {
+            name: '3 BHK Standard Interior Package',
+            dryArea: 520,
+            wetArea: 140,
+            dryRate: 1249,
+            wetRate: 1349,
+            inclusions: {
+                livingRoom: ['TV Unit', 'Standard TV Panel / Storage', 'Standard False Ceiling', 'Shoe / Storage Unit'],
+                kitchen: ['Modular Kitchen', 'Base Units', 'Wall Units', 'Standard Kitchen Storage'],
+                bedroom1: ['Wardrobe', 'Loft', 'Dresser / Mirror Provision'],
+                bedroom2: ['Wardrobe', 'Loft', 'Dresser / Mirror Provision'],
+                bedroom3: ['Wardrobe', 'Loft', 'Dresser / Mirror Provision']
+            }
+        },
+        '4BHK': {
+            name: '4 BHK Standard Interior Package',
+            dryArea: 620,
+            wetArea: 160,
+            dryRate: 1249,
+            wetRate: 1349,
+            inclusions: {
+                livingRoom: ['TV Unit', 'Standard TV Panel / Storage', 'Standard False Ceiling', 'Shoe / Storage Unit'],
+                kitchen: ['Modular Kitchen', 'Base Units', 'Wall Units', 'Standard Kitchen Storage'],
+                bedroom1: ['Wardrobe', 'Loft', 'Dresser / Mirror Provision'],
+                bedroom2: ['Wardrobe', 'Loft', 'Dresser / Mirror Provision'],
+                bedroom3: ['Wardrobe', 'Loft', 'Dresser / Mirror Provision'],
+                bedroom4: ['Wardrobe', 'Loft', 'Dresser / Mirror Provision']
+            }
+        }
+    };
+    DEFAULT_SETTINGS.packages = JSON.parse(JSON.stringify(STANDARD_PACKAGES));
+    const CUSTOM_ITEM_UNITS = ['SQFT', 'RFT', 'NOS', 'UNIT', 'LUMP SUM'];
+    const STANDARD_FINISH_NAMES = ['Basic laminate', 'Standard laminate', 'Acrylic', 'PU finish', 'Premium finish', 'Custom specification'];
+    const REFERENCE_PRICE_DISCLAIMER = 'Indicative reference price — confirm specifications, measurements, material, hardware, installation and final scope before committing to the customer.';
+    const DEFAULT_CATALOGUE = [
+        { id: 'compact-modular-kitchen', name: 'Compact modular kitchen', category: 'Kitchen', room: 'Kitchen', unit: 'RFT', referenceQuantity: 9, referenceQuantityLabel: '8–10 running ft', referenceAmount: 175000, rate: 175000 / 9, benchmarkMin: null, benchmarkMax: null, description: 'Compact modular kitchen estimate for an indicative 8–10 running ft layout.', notes: 'Confirm layout, measured running feet, cabinet configuration, hardware, installation and exclusions.', materials: 'Standard laminate assumption; confirm board, finish, hardware and accessories.', gstTreatment: 'Exclusive of configured GST', lastUpdated: '2026-10-09', active: true, finishes: [] },
+        { id: 'standard-l-shaped-kitchen', name: 'Standard L-shaped kitchen', category: 'Kitchen', room: 'Kitchen', unit: 'RFT', referenceQuantity: 11, referenceQuantityLabel: '10–12 running ft', referenceAmount: 275000, rate: 25000, benchmarkMin: null, benchmarkMax: null, description: 'L-shaped kitchen estimate for an indicative 10–12 running ft layout.', notes: 'Confirm actual measured running feet, layout, hardware, installation and final scope.', materials: 'Standard laminate assumption; confirm board, finish, hardware and accessories.', gstTreatment: 'Exclusive of configured GST', lastUpdated: '2026-10-09', active: true, finishes: [] },
+        { id: 'wardrobe', name: 'Wardrobe', category: 'Storage', room: 'Bedroom', unit: 'SQFT', referenceQuantity: 50, referenceQuantityLabel: '50 sq.ft unit area', referenceAmount: 110000, rate: 2200, benchmarkMin: null, benchmarkMax: null, description: 'Wardrobe estimate using measured wardrobe unit area.', notes: 'Use wardrobe unit area, not bedroom floor area. Confirm internals, hardware and installation.', materials: 'Standard laminate assumption; confirm board, finish, hardware and accessories.', gstTreatment: 'Exclusive of configured GST', lastUpdated: '2026-10-09', active: true, finishes: [] },
+        { id: 'tv-unit', name: 'TV unit', category: 'Living room', room: 'Living room', unit: 'SQFT', referenceQuantity: 40, referenceQuantityLabel: '40 sq.ft unit area', referenceAmount: 80000, rate: 2000, benchmarkMin: null, benchmarkMax: null, description: 'TV unit estimate using measured unit area.', notes: 'Use unit area only; do not substitute room floor area.', materials: 'Standard laminate assumption; confirm board, finish, hardware and installation.', gstTreatment: 'Exclusive of configured GST', lastUpdated: '2026-10-09', active: true, finishes: [] },
+        { id: 'shoe-rack', name: 'Shoe rack', category: 'Storage', room: 'Foyer', unit: 'SQFT', referenceQuantity: 20, referenceQuantityLabel: '20 sq.ft unit area', referenceAmount: 40000, rate: 2000, benchmarkMin: null, benchmarkMax: null, description: 'Shoe storage estimate using measured unit area.', notes: 'Measure the shoe unit, not the foyer floor area.', materials: 'Standard laminate assumption; confirm board, finish, hardware and installation.', gstTreatment: 'Exclusive of configured GST', lastUpdated: '2026-10-09', active: true, finishes: [] },
+        { id: 'study-workstation', name: 'Study/workstation', category: 'Study', room: 'Study', unit: 'SQFT', referenceQuantity: 30, referenceQuantityLabel: '30 sq.ft unit area', referenceAmount: 60000, rate: 2000, benchmarkMin: null, benchmarkMax: null, description: 'Study/workstation estimate using measured unit area.', notes: 'Measure the furniture unit, not the room floor area.', materials: 'Standard laminate assumption; confirm board, finish, hardware and installation.', gstTreatment: 'Exclusive of configured GST', lastUpdated: '2026-10-09', active: true, finishes: [] },
+        { id: 'crockery-unit', name: 'Crockery unit', category: 'Storage', room: 'Dining', unit: 'SQFT', referenceQuantity: 25, referenceQuantityLabel: '25 sq.ft unit area', referenceAmount: 50000, rate: 2000, benchmarkMin: null, benchmarkMax: null, description: 'Crockery unit estimate using measured unit area.', notes: 'Measure the unit area; confirm shelves, shutters and hardware.', materials: 'Standard laminate assumption; confirm board, finish, hardware and installation.', gstTreatment: 'Exclusive of configured GST', lastUpdated: '2026-10-09', active: true, finishes: [] },
+        { id: 'gypsum-false-ceiling', name: 'Basic gypsum false ceiling', category: 'Ceiling', room: 'Multiple rooms', unit: 'SQFT', referenceQuantity: 1, referenceQuantityLabel: 'Per sq.ft actual ceiling area', referenceAmount: 100, rate: 100, benchmarkMin: null, benchmarkMax: null, description: 'Basic gypsum false ceiling estimate per measured ceiling square foot.', notes: 'Measure actual ceiling surface and confirm design, lights and exclusions.', materials: 'Basic gypsum assumption; confirm framing, finish and installation.', gstTreatment: 'Exclusive of configured GST', lastUpdated: '2026-10-09', active: true, finishes: [] },
+        { id: 'dresser-vanity', name: 'Dresser/vanity', category: 'Bedroom', room: 'Bedroom', unit: 'LUMP SUM', referenceQuantity: 1, referenceQuantityLabel: 'Standard unit allowance', referenceAmount: 35000, rate: 35000, benchmarkMin: null, benchmarkMax: null, description: 'Indicative allowance for one standard dresser/vanity unit.', notes: 'Confirm dimensions, mirror, lighting, hardware and installation.', materials: 'Standard laminate assumption; confirm board and finish.', gstTreatment: 'Exclusive of configured GST', lastUpdated: '2026-10-09', active: true, finishes: [] },
+        { id: 'electrical-point', name: 'Additional electrical point', category: 'Electrical', room: 'Multiple rooms', unit: 'NOS', referenceQuantity: 1, referenceQuantityLabel: 'Per point', referenceAmount: 1000, rate: 1000, benchmarkMin: null, benchmarkMax: null, description: 'Additional electrical point estimate.', notes: 'Confirm point type, wiring, accessories and site conditions.', materials: 'Basic point assumption; specify accessories and installation.', gstTreatment: 'Exclusive of configured GST', lastUpdated: '2026-10-09', active: true, finishes: [] },
+        { id: 'plumbing-point', name: 'Additional plumbing point', category: 'Plumbing', room: 'Multiple rooms', unit: 'NOS', referenceQuantity: 1, referenceQuantityLabel: 'Per point', referenceAmount: 1500, rate: 1500, benchmarkMin: null, benchmarkMax: null, description: 'Additional plumbing point estimate.', notes: 'Confirm point type, pipe routing, fittings and site conditions.', materials: 'Basic point assumption; specify fittings and installation.', gstTreatment: 'Exclusive of configured GST', lastUpdated: '2026-10-09', active: true, finishes: [] },
+        { id: 'wall-panelling', name: 'Wall panelling', category: 'Wall finish', room: 'Multiple rooms', unit: 'SQFT', referenceQuantity: 1, referenceQuantityLabel: 'Per sq.ft measured wall surface', referenceAmount: 1000, rate: 1000, benchmarkMin: null, benchmarkMax: null, description: 'Wall panelling estimate per measured wall surface square foot.', notes: 'Measure wall surface only; confirm openings, pattern and installation.', materials: 'Standard laminate assumption; confirm substrate and finish.', gstTreatment: 'Exclusive of configured GST', lastUpdated: '2026-10-09', active: true, finishes: [] }
+    ];
 
     let settings = {};
     let quotations = [];
+    let catalogueOrigin = 'dashboard';
     
     const wizardState = {
         name: '', phone: '', email: '', location: '', propertyType: '',
-        totalArea: 0, dryArea: 0, wetArea: 0, totalCost: 0
+        totalArea: 0, dryArea: 0, wetArea: 0, totalCost: 0,
+        standardPackageAmount: 0, additionalItems: [], additionalItemsTotal: 0,
+        gstAmount: 0, grandTotal: 0, calculationVersion: 3,
+        packageId: '', packageSnapshot: null, gstRate: null, quoteDate: '',
+        quotationMode: 'standard', discount: 0
     };
 
     let currentQuotId = null;
@@ -600,6 +784,7 @@
         loadQuotations();
         renderHomeTypes();
         renderSettingsForm();
+        setQuotationMode(wizardState.quotationMode);
         
         // Start view
         if (quotations.length > 0) switchView('dashboard');
@@ -632,6 +817,44 @@
         if (view === 'dashboard') renderDashboard();
     }
 
+    function setQuotationMode(mode) {
+        if (!['standard', 'manual'].includes(mode)) return;
+        const previousMode = wizardState.quotationMode;
+        if (previousMode === 'manual' && mode === 'standard' && wizardState.additionalItems.length &&
+            !window.confirm('Switch to Standard Package? The selected items will be retained and priced as additional requirements on top of the package.')) {
+            return;
+        }
+        wizardState.quotationMode = mode;
+        if (mode === 'manual') {
+            wizardState.propertyType = '';
+            wizardState.packageId = '';
+            wizardState.packageSnapshot = null;
+            document.getElementById('wiz-property-type').value = '';
+            document.getElementById('wiz-area-label').textContent = 'Customer Property Area (sq.ft) (optional)';
+        } else if (previousMode !== 'standard') {
+            wizardState.propertyType = '';
+            document.getElementById('wiz-area-label').textContent = 'Customer Property Area (sq.ft) *';
+        }
+        document.getElementById('mode-standard').classList.toggle('border-gold-500', mode === 'standard');
+        document.getElementById('mode-standard').classList.toggle('bg-gold-50', mode === 'standard');
+        document.getElementById('mode-manual').classList.toggle('border-gold-500', mode === 'manual');
+        document.getElementById('mode-manual').classList.toggle('bg-gold-50', mode === 'manual');
+        document.getElementById('home-type-field').classList.toggle('hidden', mode !== 'standard');
+        document.getElementById('standard-package-section').classList.toggle('hidden', mode !== 'standard');
+        document.getElementById('wizard-items-heading').textContent = mode === 'standard' ? 'Standard Package & Additional Requirements' : 'Manual Estimate Items';
+        document.getElementById('manual-items-heading').textContent = mode === 'standard' ? 'Additional / Custom Requirements' : 'Selected Estimate Items';
+        document.getElementById('manual-items-description').textContent = mode === 'standard'
+            ? 'Only items added here are charged in addition to the package.'
+            : 'Only selected items are charged. No BHK package is added in Manual Estimate mode.';
+        document.getElementById('add-item-button-label').textContent = mode === 'standard' ? 'Add Custom Item' : 'Add Custom Item';
+        document.getElementById('catalogue-price-disclaimer').classList.toggle('hidden', mode !== 'manual');
+        document.getElementById('summary-package-row').classList.toggle('hidden', mode !== 'standard');
+        document.getElementById('summary-items-label').textContent = mode === 'standard' ? 'Additional Requirements' : 'Selected Estimate Items';
+        if (mode === 'standard') renderHomeTypes();
+        calculateCosts();
+        checkWizard();
+    }
+
     function showToast(msg) {
         const t = document.getElementById('toast');
         t.textContent = msg;
@@ -640,7 +863,21 @@
     }
 
     function fmtMoney(amt) {
-        return Math.round(amt).toLocaleString('en-IN');
+        return Number(amt || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
+    }
+
+    function fmtCurrency(amt) {
+        const value = Number(amt || 0);
+        return value.toLocaleString('en-IN', {
+            minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[char]);
     }
 
     // ─────────────────────────────────────────────────────────
@@ -650,6 +887,35 @@
         const saved = localStorage.getItem('dadodec_unified_settings');
         const savedSettings = saved ? JSON.parse(saved) : {};
         settings = { ...DEFAULT_SETTINGS, ...savedSettings };
+        const legacyDryRate = Number(savedSettings.rateDry);
+        const legacyWetRate = Number(savedSettings.rateWet);
+        settings.packages = Object.fromEntries(Object.entries(STANDARD_PACKAGES).map(([id, defaults]) => {
+            const savedPackage = savedSettings.packages?.[id] || {};
+            return [id, {
+                ...defaults,
+                ...savedPackage,
+                dryRate: savedPackage.dryRate ?? (legacyDryRate > 0 ? legacyDryRate : defaults.dryRate),
+                wetRate: savedPackage.wetRate ?? (legacyWetRate > 0 ? legacyWetRate : defaults.wetRate),
+                inclusions: savedPackage.inclusions
+                    ? Object.fromEntries(Object.entries(savedPackage.inclusions).map(([room, items]) => [room, Array.isArray(items) ? items.map(String) : []]))
+                    : JSON.parse(JSON.stringify(defaults.inclusions))
+            }];
+        }));
+        settings.gstRate = Number.isFinite(Number(settings.gstRate)) ? Math.max(0, Number(settings.gstRate)) : 0;
+        settings.discountsEnabled = Boolean(settings.discountsEnabled);
+        settings.catalogue = Array.isArray(savedSettings.catalogue)
+            ? savedSettings.catalogue.map(item => ({
+                benchmarkMin: null,
+                benchmarkMax: null,
+                finishes: [],
+                active: true,
+                ...item
+            }))
+            : JSON.parse(JSON.stringify(DEFAULT_CATALOGUE));
+        settings.catalogue = settings.catalogue.map(item => ({
+            ...item,
+            finishes: normalizeCatalogueFinishes(item.finishes)
+        }));
 
         const legacyDefaults = {
             companyName: 'Dadodec Interiors',
@@ -666,9 +932,19 @@
             if (savedSettings[key] === legacyDefaults[key]) settings[key] = DEFAULT_SETTINGS[key];
         });
         
-        // Update UI labels for rates
-        document.getElementById('lbl-rate-dry').textContent = settings.rateDry;
-        document.getElementById('lbl-rate-wet').textContent = settings.rateWet;
+    }
+
+    function normalizeCatalogueFinishes(finishes) {
+        const configured = Array.isArray(finishes) ? finishes : [];
+        const byName = new Map(configured.filter(finish => finish && typeof finish.name === 'string')
+            .map(finish => [finish.name, finish]));
+        const standard = STANDARD_FINISH_NAMES.map(name => ({
+            name,
+            rate: byName.has(name) ? byName.get(name).rate : null
+        }));
+        return standard.concat(configured.filter(finish =>
+            finish && typeof finish.name === 'string' && !STANDARD_FINISH_NAMES.includes(finish.name)
+        ));
     }
 
     function renderSettingsForm() {
@@ -683,8 +959,10 @@
         document.getElementById('set-gstin').value = settings.gstin || '';
         document.getElementById('set-validity').value = settings.validity || '';
         
-        document.getElementById('set-rate-dry').value = settings.rateDry;
-        document.getElementById('set-rate-wet').value = settings.rateWet;
+        document.getElementById('set-gst-rate').value = settings.gstRate;
+        document.getElementById('set-discounts-enabled').checked = settings.discountsEnabled;
+        renderPackageSettings();
+        renderCatalogueSettings();
         
         document.getElementById('set-bank-accname').value = settings.bankAccName;
         document.getElementById('set-bank-name').value = settings.bankName;
@@ -700,6 +978,114 @@
         logoPreview.classList.remove('hidden');
         document.getElementById('set-logo-placeholder').classList.add('hidden');
         document.getElementById('set-signature-preview').src = settings.signatureBase64 || 'assets/dadodec-signature.png';
+    }
+
+    function renderPackageSettings() {
+        const container = document.getElementById('package-settings-list');
+        container.innerHTML = Object.entries(settings.packages).map(([id, pkg]) => `
+            <section class="rounded-xl border border-slate-200 p-4" data-package-setting="${id}">
+                <h4 class="font-bold text-slate-800 mb-3">${escapeHtml(pkg.name)}</h4>
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="form-label">Standard Dry Area (sq.ft)</label><input type="number" min="0" step="any" data-package-field="dryArea" class="form-input" value="${escapeHtml(pkg.dryArea)}"></div>
+                    <div><label class="form-label">Standard Wet Area (sq.ft)</label><input type="number" min="0" step="any" data-package-field="wetArea" class="form-input" value="${escapeHtml(pkg.wetArea)}"></div>
+                    <div><label class="form-label">Dry Rate (₹ / sq.ft)</label><input type="number" min="0" step="any" data-package-field="dryRate" class="form-input" value="${escapeHtml(pkg.dryRate)}"></div>
+                    <div><label class="form-label">Wet Rate (₹ / sq.ft)</label><input type="number" min="0" step="any" data-package-field="wetRate" class="form-input" value="${escapeHtml(pkg.wetRate)}"></div>
+                </div>
+                <label class="form-label mt-4">Package Inclusions</label>
+                <textarea data-package-scope class="form-input h-32 resize-y" spellcheck="false">${escapeHtml(formatPackageScope(pkg.inclusions))}</textarea>
+            </section>
+        `).join('');
+    }
+
+    function renderCatalogueSettings() {
+        document.getElementById('catalogue-settings-list').innerHTML = settings.catalogue.map((item, index) => `
+            <section class="rounded-xl border border-slate-200 p-4 ${item.active ? '' : 'bg-slate-50 opacity-70'}" data-catalogue-setting="${index}">
+                <div class="flex justify-between items-center gap-3 mb-3">
+                    <strong class="text-sm">${escapeHtml(item.name || 'New catalogue item')}</strong>
+                    <label class="text-xs flex items-center gap-1"><input type="checkbox" data-catalogue-field="active" ${item.active ? 'checked' : ''}> Active</label>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <label class="text-xs">Item name<input data-catalogue-field="name" class="form-input mt-1" value="${escapeHtml(item.name)}"></label>
+                    <label class="text-xs">Category<input data-catalogue-field="category" class="form-input mt-1" value="${escapeHtml(item.category)}"></label>
+                    <label class="text-xs">Default room<input data-catalogue-field="room" class="form-input mt-1" value="${escapeHtml(item.room)}"></label>
+                    <label class="text-xs">Unit<select data-catalogue-field="unit" class="form-input mt-1">${CUSTOM_ITEM_UNITS.map(unit => `<option ${item.unit === unit ? 'selected' : ''}>${unit}</option>`).join('')}</select></label>
+                    <label class="text-xs">Reference quantity<input type="number" min="0" step="any" data-catalogue-field="referenceQuantity" class="form-input mt-1" value="${escapeHtml(item.referenceQuantity)}"></label>
+                    <label class="text-xs">Quantity guidance<input data-catalogue-field="referenceQuantityLabel" class="form-input mt-1" value="${escapeHtml(item.referenceQuantityLabel)}"></label>
+                    <label class="text-xs">Indicative estimate (₹)<input type="number" min="0" step="any" data-catalogue-field="referenceAmount" class="form-input mt-1" value="${escapeHtml(item.referenceAmount)}"></label>
+                    <label class="text-xs">Suggested rate (₹ / unit)<input type="number" min="0" step="any" data-catalogue-field="rate" class="form-input mt-1" value="${escapeHtml(item.rate)}"></label>
+                    <label class="text-xs">Market benchmark low (₹)<input type="number" min="0" step="any" data-catalogue-field="benchmarkMin" class="form-input mt-1" value="${escapeHtml(item.benchmarkMin ?? '')}" placeholder="Not configured"></label>
+                    <label class="text-xs">Market benchmark high (₹)<input type="number" min="0" step="any" data-catalogue-field="benchmarkMax" class="form-input mt-1" value="${escapeHtml(item.benchmarkMax ?? '')}" placeholder="Not configured"></label>
+                    <label class="text-xs">Last reviewed<input type="date" data-catalogue-field="lastUpdated" class="form-input mt-1" value="${escapeHtml(item.lastUpdated || '')}"></label>
+                    <label class="text-xs">GST treatment<input data-catalogue-field="gstTreatment" class="form-input mt-1" value="${escapeHtml(item.gstTreatment || 'Exclusive of configured GST')}"></label>
+                    <label class="text-xs sm:col-span-2">Indicative scope<textarea data-catalogue-field="description" class="form-input mt-1" rows="2">${escapeHtml(item.description || '')}</textarea></label>
+                    <label class="text-xs sm:col-span-2">Included / excluded notes<textarea data-catalogue-field="notes" class="form-input mt-1" rows="2">${escapeHtml(item.notes || '')}</textarea></label>
+                    <label class="text-xs sm:col-span-2">Material and finish assumptions<textarea data-catalogue-field="materials" class="form-input mt-1" rows="2">${escapeHtml(item.materials || '')}</textarea></label>
+                    <label class="text-xs sm:col-span-4">Finish prices (one per line: Finish: rate; leave rate blank until approved)<textarea data-catalogue-finishes class="form-input mt-1" rows="3" placeholder="Basic laminate:&#10;Standard laminate:&#10;Acrylic:&#10;PU finish:&#10;Premium finish:&#10;Custom specification:">${escapeHtml((item.finishes || []).map(finish => `${finish.name}: ${finish.rate ?? ''}`).join('\n'))}</textarea></label>
+                </div>
+                <button type="button" onclick="removeCatalogueSetting(${index})" class="mt-3 text-xs font-bold text-red-700">${item.active ? 'Deactivate item' : 'Remove item'}</button>
+            </section>
+        `).join('');
+    }
+
+    function addCatalogueSetting() {
+        settings.catalogue.push({
+            id: `catalogue-${Date.now()}`,
+            name: '',
+            category: '',
+            room: '',
+            unit: 'UNIT',
+            referenceQuantity: 1,
+            referenceQuantityLabel: 'Per unit',
+            referenceAmount: 0,
+            rate: 0,
+            benchmarkMin: null,
+            benchmarkMax: null,
+            description: '',
+            notes: '',
+            materials: '',
+            gstTreatment: 'Exclusive of configured GST',
+            lastUpdated: new Date().toISOString().slice(0, 10),
+            active: true,
+            finishes: []
+        });
+        renderCatalogueSettings();
+    }
+
+    function removeCatalogueSetting(index) {
+        const item = settings.catalogue[index];
+        if (!item) return;
+        if (item.active) item.active = false;
+        else settings.catalogue.splice(index, 1);
+        renderCatalogueSettings();
+    }
+
+    function formatPackageScope(inclusions) {
+        return Object.entries(inclusions || {}).map(([room, items]) =>
+            `${formatRoomName(room)}: ${(items || []).join(' | ')}`
+        ).join('\n');
+    }
+
+    function formatRoomName(room) {
+        return room.replace(/([a-z])([0-9])/gi, '$1 $2')
+            .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+            .replace(/\b\w/g, char => char.toUpperCase());
+    }
+
+    function parsePackageScope(text) {
+        const inclusions = {};
+        for (const line of text.split(/\r?\n/).map(value => value.trim()).filter(Boolean)) {
+            const separator = line.indexOf(':');
+            if (separator < 1) throw new Error('Enter package inclusions as “Room: Item | Item”, one room per line.');
+            const room = line.slice(0, separator).trim();
+            const roomKey = room.replace(/[^a-zA-Z0-9 ]/g, '').trim().split(/\s+/).map((part, index) =>
+                index === 0 ? part.toLowerCase() : part[0].toUpperCase() + part.slice(1).toLowerCase()
+            ).join('');
+            const items = line.slice(separator + 1).split('|').map(value => value.trim()).filter(Boolean);
+            if (!roomKey || !items.length) throw new Error('Each package room needs at least one included item.');
+            inclusions[roomKey] = items;
+        }
+        if (!Object.keys(inclusions).length) throw new Error('Each standard package must have at least one included scope item.');
+        return inclusions;
     }
 
     function handleLogoUpload(e) {
@@ -749,6 +1135,69 @@
     }
 
     function saveSettings() {
+        const gstInput = document.getElementById('set-gst-rate').value;
+        const gstRate = Number(gstInput);
+        if (gstInput === '' || !Number.isFinite(gstRate) || gstRate < 0) {
+            showToast('GST rate cannot be negative or invalid.');
+            return;
+        }
+        const updatedPackages = {};
+        const updatedCatalogue = [];
+        try {
+            Object.entries(STANDARD_PACKAGES).forEach(([id, defaults]) => {
+                const section = document.querySelector(`[data-package-setting="${id}"]`);
+                const fields = Object.fromEntries(Array.from(section.querySelectorAll('[data-package-field]')).map(input => [input.dataset.packageField, Number(input.value)]));
+                if (Array.from(section.querySelectorAll('[data-package-field]')).some(input => input.value === '') ||
+                    Object.values(fields).some(value => !Number.isFinite(value) || value < 0)) {
+                    throw new Error(`${defaults.name}: areas and rates must be valid, non-negative numbers.`);
+                }
+                updatedPackages[id] = {
+                    ...settings.packages[id],
+                    ...fields,
+                    inclusions: parsePackageScope(section.querySelector('[data-package-scope]').value)
+                };
+            });
+            document.querySelectorAll('[data-catalogue-setting]').forEach(section => {
+                const index = Number(section.dataset.catalogueSetting);
+                const original = settings.catalogue[index];
+                const fields = {};
+                section.querySelectorAll('[data-catalogue-field]').forEach(input => {
+                    const key = input.dataset.catalogueField;
+                    if (input.type === 'checkbox') fields[key] = input.checked;
+                    else if (['referenceQuantity', 'referenceAmount', 'rate', 'benchmarkMin', 'benchmarkMax'].includes(key)) {
+                        fields[key] = input.value === '' ? null : Number(input.value);
+                    } else fields[key] = input.value.trim();
+                });
+                const numericKeys = ['referenceQuantity', 'referenceAmount', 'rate', 'benchmarkMin', 'benchmarkMax'];
+                if (fields.active && (!fields.name || !fields.category || !fields.room ||
+                    numericKeys.slice(0, 3).some(key => !Number.isFinite(fields[key]) || fields[key] < 0) ||
+                    !CUSTOM_ITEM_UNITS.includes(fields.unit))) {
+                    throw new Error(`Complete a valid name, category, room, unit, quantity and non-negative price for catalogue item ${index + 1}.`);
+                }
+                if ((fields.benchmarkMin !== null && (!Number.isFinite(fields.benchmarkMin) || fields.benchmarkMin < 0)) ||
+                    (fields.benchmarkMax !== null && (!Number.isFinite(fields.benchmarkMax) || fields.benchmarkMax < 0)) ||
+                    (fields.benchmarkMin !== null && fields.benchmarkMax !== null && fields.benchmarkMax < fields.benchmarkMin)) {
+                    throw new Error(`Enter a valid benchmark range for ${fields.name || `catalogue item ${index + 1}`}.`);
+                }
+                const finishes = section.querySelector('[data-catalogue-finishes]').value.split(/\r?\n/)
+                    .map(line => line.trim()).filter(Boolean).map(line => {
+                        const separator = line.indexOf(':');
+                        if (separator < 1) throw new Error('Enter finish prices as “Finish: rate”, one finish per line.');
+                        const name = line.slice(0, separator).trim();
+                        const rawRate = line.slice(separator + 1).trim();
+                        const rate = rawRate === '' ? null : Number(rawRate);
+                        if (!name || (rate !== null && (!Number.isFinite(rate) || rate < 0))) {
+                            throw new Error(`Enter a valid non-negative finish price for ${name || 'each finish'}.`);
+                        }
+                        return { name, rate };
+                    });
+                updatedCatalogue.push({ ...original, ...fields, finishes });
+            });
+        } catch (error) {
+            showToast(error.message);
+            return;
+        }
+
         settings.companyName = document.getElementById('set-company').value;
         settings.businessName = document.getElementById('set-business').value;
         settings.email = document.getElementById('set-email').value;
@@ -760,8 +1209,10 @@
         settings.gstin = document.getElementById('set-gstin').value;
         settings.validity = document.getElementById('set-validity').value;
         
-        settings.rateDry = parseFloat(document.getElementById('set-rate-dry').value) || 1249;
-        settings.rateWet = parseFloat(document.getElementById('set-rate-wet').value) || 1349;
+        settings.gstRate = gstRate;
+        settings.packages = updatedPackages;
+        settings.catalogue = updatedCatalogue;
+        settings.discountsEnabled = document.getElementById('set-discounts-enabled').checked;
         
         settings.bankAccName = document.getElementById('set-bank-accname').value;
         settings.bankName = document.getElementById('set-bank-name').value;
@@ -780,9 +1231,7 @@
             return;
         }
         
-        document.getElementById('lbl-rate-dry').textContent = settings.rateDry;
-        document.getElementById('lbl-rate-wet').textContent = settings.rateWet;
-        
+        calculateCosts();
         showToast('✅ Settings saved successfully');
     }
 
@@ -790,21 +1239,357 @@
     // WIZARD
     // ─────────────────────────────────────────────────────────
     function renderHomeTypes() {
-        document.getElementById('wiz-property-grid').innerHTML = HOME_TYPES.map(ht => `
-            <div class="home-type-card text-xs font-bold text-slate-700" id="ht-${ht.replace(/\s+/g,'')}" onclick="selectProperty('${ht}')">
-                <div class="icon-box w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-2 text-lg transition-colors">
-                    <i class="ph ph-house"></i>
-                </div>
-                ${ht}
+        const select = document.getElementById('wiz-property-type');
+        select.innerHTML = '<option value="">Select home type</option>' + HOME_TYPES.map(homeType =>
+            `<option value="${homeType}">${homeType}</option>`
+        ).join('');
+        select.value = wizardState.propertyType;
+    }
+
+    function selectProperty(ht) {
+        if (wizardState.packageId && wizardState.packageId !== HOME_TYPE_IDS[ht]) {
+            wizardState.packageSnapshot = null;
+            wizardState.packageId = '';
+            wizardState.gstRate = null;
+        }
+        wizardState.propertyType = HOME_TYPE_IDS[ht] ? ht : '';
+        calculateCosts();
+        checkWizard();
+    }
+
+    function getStandardPackage(homeType) {
+        const id = HOME_TYPE_IDS[homeType];
+        if (id && wizardState.packageSnapshot && wizardState.packageId === id) return wizardState.packageSnapshot;
+        return id ? settings.packages?.[id] : null;
+    }
+
+    function getPackageConfigurationError(pkg) {
+        if (!pkg || !pkg.name || !pkg.inclusions || !Object.keys(pkg.inclusions).length ||
+            Object.values(pkg.inclusions).some(items => !Array.isArray(items) || !items.length || items.some(item => !String(item).trim()))) return true;
+        return ['dryArea', 'wetArea', 'dryRate', 'wetRate'].some(key =>
+            pkg[key] === null || pkg[key] === '' || !Number.isFinite(Number(pkg[key])) || Number(pkg[key]) < 0
+        ) || Number(pkg.dryArea) + Number(pkg.wetArea) <= 0;
+    }
+
+    function toMinorUnits(amount) {
+        return Math.round((amount + Number.EPSILON) * 100);
+    }
+
+    function fromMinorUnits(amount) {
+        return amount / 100;
+    }
+
+    function calculateStandardPackage(pkg) {
+        const dryAmount = toMinorUnits(Number(pkg.dryArea) * Number(pkg.dryRate));
+        const wetAmount = toMinorUnits(Number(pkg.wetArea) * Number(pkg.wetRate));
+        return {
+            dryAmount: fromMinorUnits(dryAmount),
+            wetAmount: fromMinorUnits(wetAmount),
+            standardPackageAmount: fromMinorUnits(dryAmount + wetAmount)
+        };
+    }
+
+    function calculateAdditionalItems(items) {
+        let total = 0;
+        let isValid = true;
+        const calculatedItems = items.map(item => {
+            const quantityRequired = item.unit !== 'LUMP SUM';
+            const quantity = item.quantity === '' || item.quantity === null || item.quantity === undefined ? 0 : Number(item.quantity);
+            const rate = Number(item.rate);
+            const hasQuantity = item.quantity !== '' && item.quantity !== null && item.quantity !== undefined;
+            const hasRate = item.rate !== '' && item.rate !== null && item.rate !== undefined;
+            const valid = typeof item.name === 'string' && item.name.trim() &&
+                (!quantityRequired || (hasQuantity && Number.isFinite(quantity) && quantity >= 0)) &&
+                hasRate && Number.isFinite(rate) && rate >= 0 && (!item.finishError || item.authorizedOverride) &&
+                (!item.priceOverrideRequested || item.authorizedOverride);
+            if (!valid) isValid = false;
+            const amount = valid ? toMinorUnits(item.unit === 'LUMP SUM' ? rate : quantity * rate) : 0;
+            total += amount;
+            return { ...item, quantity, rate, amount: fromMinorUnits(amount) };
+        });
+        return { items: calculatedItems, total: fromMinorUnits(total), isValid };
+    }
+
+    function calculateSubtotal(standardPackageAmount, additionalItemsTotal) {
+        return fromMinorUnits(toMinorUnits(standardPackageAmount) + toMinorUnits(additionalItemsTotal));
+    }
+
+    function calculateGST(subtotal, gstRate) {
+        return fromMinorUnits(toMinorUnits(subtotal * (gstRate / 100)));
+    }
+
+    function calculateGrandTotal(subtotal, gstAmount) {
+        return fromMinorUnits(toMinorUnits(subtotal) + toMinorUnits(gstAmount));
+    }
+
+    function calculateQuotation(mode, homeType, items, gstRate, discount = 0) {
+        const pkg = mode === 'standard' ? getStandardPackage(homeType) : null;
+        if (mode === 'standard' && getPackageConfigurationError(pkg)) {
+            return { valid: false, error: 'Standard package configuration is incomplete. Please contact the administrator before generating the quotation.' };
+        }
+        const packageAmounts = mode === 'standard'
+            ? calculateStandardPackage(pkg)
+            : { dryAmount: 0, wetAmount: 0, standardPackageAmount: 0 };
+        const additional = calculateAdditionalItems(items);
+        const subtotal = calculateSubtotal(packageAmounts.standardPackageAmount, additional.total);
+        const numericDiscount = Number(discount);
+        const validDiscount = Number.isFinite(numericDiscount) && numericDiscount >= 0 && toMinorUnits(numericDiscount) <= toMinorUnits(subtotal);
+        const discountAmount = validDiscount ? numericDiscount : 0;
+        const taxableSubtotal = subtotal - discountAmount;
+        const gst = calculateGST(taxableSubtotal, gstRate);
+        const validMode = mode === 'standard' || mode === 'manual';
+        const hasRequiredItems = mode !== 'manual' || items.length > 0;
+        const valid = validMode && additional.isValid && validDiscount && hasRequiredItems;
+        return {
+            valid,
+            error: !validMode ? 'Select a quotation type.' :
+                !hasRequiredItems ? 'Add at least one catalogue or custom item to the manual estimate.' :
+                !validDiscount ? 'Discount must be non-negative and cannot exceed the item subtotal.' :
+                !additional.isValid ? 'Complete each item, quantity, rate and approved finish price before generating the quotation.' : '',
+            pkg,
+            ...packageAmounts,
+            additionalItems: additional.items,
+            additionalItemsTotal: additional.total,
+            subtotal,
+            discount: validDiscount ? numericDiscount || 0 : 0,
+            taxableSubtotal,
+            gstAmount: gst,
+            grandTotal: calculateGrandTotal(taxableSubtotal, gst)
+        };
+    }
+
+    function renderPackageScope(pkg, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        const entries = Object.entries(pkg?.inclusions || {});
+        container.innerHTML = entries.map(([room, items]) => `
+            <div class="rounded-lg bg-white border border-slate-200 p-3">
+                <h5 class="font-bold uppercase text-[10px] tracking-wider text-slate-600 mb-1">${escapeHtml(formatRoomName(room))}</h5>
+                <ul class="space-y-1">${items.map(item => `<li class="flex gap-1.5"><span class="text-emerald-600">✓</span><span>${escapeHtml(item)}</span></li>`).join('')}</ul>
             </div>
         `).join('');
     }
 
-    function selectProperty(ht) {
-        wizardState.propertyType = ht;
-        document.querySelectorAll('.home-type-card').forEach(c => c.classList.remove('selected'));
-        document.getElementById(`ht-${ht.replace(/\s+/g,'')}`).classList.add('selected');
-        checkWizard();
+    function openPriceCatalogue(origin = 'dashboard') {
+        catalogueOrigin = origin;
+        renderPriceCatalogue();
+        document.getElementById('catalogue-modal').classList.remove('hidden');
+        setTimeout(() => document.getElementById('catalogue-search').focus(), 0);
+    }
+
+    function closePriceCatalogue() {
+        document.getElementById('catalogue-modal').classList.add('hidden');
+    }
+
+    function renderPriceCatalogue() {
+        const active = settings.catalogue.filter(item => item.active);
+        const filters = [
+            ['catalogue-room-filter', 'room', 'All rooms'],
+            ['catalogue-category-filter', 'category', 'All categories'],
+            ['catalogue-unit-filter', 'unit', 'All units']
+        ];
+        filters.forEach(([id, key, label]) => {
+            const select = document.getElementById(id);
+            const selected = select.value;
+            const values = [...new Set(active.map(item => item[key]).filter(Boolean))].sort();
+            select.innerHTML = `<option value="">${label}</option>${values.map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('')}`;
+            if (values.includes(selected)) select.value = selected;
+        });
+        const query = document.getElementById('catalogue-search').value.trim().toLowerCase();
+        const room = document.getElementById('catalogue-room-filter').value;
+        const category = document.getElementById('catalogue-category-filter').value;
+        const unit = document.getElementById('catalogue-unit-filter').value;
+        const sort = document.getElementById('catalogue-sort').value;
+        const results = settings.catalogue.map((item, index) => ({ item, index })).filter(({ item }) => item.active).filter(({ item }) =>
+            (!query || [item.name, item.category, item.room, item.description, item.notes, item.materials].join(' ').toLowerCase().includes(query)) &&
+            (!room || item.room === room) && (!category || item.category === category) && (!unit || item.unit === unit)
+        );
+        results.sort((a, b) => sort === 'price-asc' ? a.item.referenceAmount - b.item.referenceAmount :
+            sort === 'price-desc' ? b.item.referenceAmount - a.item.referenceAmount : a.item.name.localeCompare(b.item.name));
+        document.getElementById('catalogue-empty').classList.toggle('hidden', results.length > 0);
+        document.getElementById('catalogue-results').innerHTML = results.map(({ item, index }) => `
+            <article class="border border-slate-200 rounded-xl p-4 flex flex-col">
+                <div class="flex justify-between gap-2"><h3 class="font-bold text-slate-900">${escapeHtml(item.name)}</h3><span class="text-[10px] h-fit rounded-full px-2 py-1 bg-slate-100">${escapeHtml(item.category)}</span></div>
+                <p class="text-xs text-slate-500 mt-1">${escapeHtml(item.room)} · ${escapeHtml(item.referenceQuantityLabel)} · ${escapeHtml(item.unit)}</p>
+                <p class="text-sm font-bold text-gold-700 mt-3">Indicative estimate: ₹${fmtCurrency(item.referenceAmount)}</p>
+                <p class="text-xs text-slate-600 mt-1">Suggested reference rate: ₹${fmtCurrency(item.rate)} / ${escapeHtml(item.unit)}</p>
+                <p class="text-xs text-slate-500 mt-1">Market benchmark: ${item.benchmarkMin !== null && item.benchmarkMax !== null ? `₹${fmtCurrency(item.benchmarkMin)}–₹${fmtCurrency(item.benchmarkMax)}` : 'Not configured'}</p>
+                <p class="text-xs text-slate-600 mt-3">${escapeHtml(item.description)}</p>
+                <p class="text-[11px] text-slate-500 mt-2">${escapeHtml(item.notes)} ${escapeHtml(item.materials)}</p>
+                <p class="text-[10px] text-slate-500 mt-2">GST: ${escapeHtml(item.gstTreatment)} · Last reviewed: ${escapeHtml(item.lastUpdated || 'Not recorded')}</p>
+                <button type="button" onclick="addCatalogueItemFromReference(${index})" class="btn-gold mt-4 px-3 py-2 rounded-lg text-xs font-bold">Add to Manual Estimate</button>
+            </article>
+        `).join('');
+    }
+
+    function addCatalogueItemFromReference(index) {
+        if (catalogueOrigin === 'dashboard') {
+            startNewQuotation();
+            setQuotationMode('manual');
+        }
+        selectCatalogueItem(index);
+    }
+
+    function addCustomItem() {
+        wizardState.additionalItems.push({
+            name: '',
+            room: '',
+            description: '',
+            specification: '',
+            unit: 'NOS',
+            quantity: 1,
+            rate: '',
+            discount: 0,
+            notes: '',
+            source: 'custom',
+            finishError: false,
+            authorizedOverride: false,
+            priceOverrideRequested: false
+        });
+        renderCustomItems();
+        calculateCosts();
+    }
+
+    function removeCustomItem(index) {
+        wizardState.additionalItems.splice(index, 1);
+        renderCustomItems();
+        calculateCosts();
+    }
+
+    function selectCatalogueItem(catalogueIndex) {
+        const item = settings.catalogue[catalogueIndex];
+        if (!item || !item.active) return;
+        if (wizardState.quotationMode !== 'manual') setQuotationMode('manual');
+        wizardState.additionalItems.push({
+            catalogueId: item.id,
+            name: item.name,
+            room: item.room,
+            description: item.description,
+            specification: '',
+            unit: item.unit,
+            quantity: item.referenceQuantity,
+            rate: item.rate,
+            referenceRate: item.rate,
+            discount: 0,
+            notes: item.notes,
+            source: 'catalogue',
+            authorizedOverride: false,
+            priceOverrideRequested: false,
+            finishError: false,
+            referenceAmount: item.referenceAmount,
+            referenceQuantityLabel: item.referenceQuantityLabel,
+            marketBenchmark: item.benchmarkMin !== null && item.benchmarkMax !== null
+                ? `${fmtCurrency(item.benchmarkMin)}–${fmtCurrency(item.benchmarkMax)}`
+                : 'Not configured',
+            materials: item.materials,
+            gstTreatment: item.gstTreatment,
+            catalogueFinishes: JSON.parse(JSON.stringify(item.finishes || []))
+        });
+        closePriceCatalogue();
+        renderCustomItems();
+        calculateCosts();
+        showToast(`${item.name} added using an indicative reference price.`);
+    }
+
+    function applyItemFinish(index, finishName) {
+        const item = wizardState.additionalItems[index];
+        const catalogueItem = settings.catalogue.find(entry => entry.id === item?.catalogueId);
+        if (!item || !catalogueItem) return;
+        item.specification = finishName;
+        const finishes = item.catalogueFinishes || catalogueItem.finishes || [];
+        if (finishName === 'Standard (reference)') {
+            item.rate = item.referenceRate ?? catalogueItem.rate;
+            item.finishError = false;
+            item.priceOverrideRequested = false;
+        } else {
+            const finish = finishes.find(entry => entry.name === finishName);
+            if (!finish || finish.rate === null || finish.rate === '') {
+                item.rate = '';
+                item.finishError = true;
+                item.priceOverrideRequested = false;
+            } else {
+                item.rate = Number(finish.rate);
+                item.finishError = false;
+                item.priceOverrideRequested = false;
+            }
+        }
+        renderCustomItems();
+        calculateCosts();
+    }
+
+    function authorizeCatalogueOverride(index, authorized) {
+        const item = wizardState.additionalItems[index];
+        if (!item) return;
+        item.authorizedOverride = authorized;
+        if (authorized && item.rate !== '' && Number.isFinite(Number(item.rate)) && Number(item.rate) >= 0) item.finishError = false;
+        updateCustomItemValidation(index);
+        calculateCosts();
+    }
+
+    function updateCustomItem(index, field, value) {
+        const item = wizardState.additionalItems[index];
+        if (!item) return;
+        item[field] = ['quantity', 'rate', 'discount'].includes(field) ? (value === '' ? '' : Number(value)) : value;
+        if (field === 'rate' && item.source === 'catalogue' &&
+            (!Number.isFinite(Number(value)) || Number(value) !== Number(item.referenceRate))) {
+            item.priceOverrideRequested = true;
+            if (item.authorizedOverride && value !== '') item.finishError = false;
+        }
+        if (field === 'unit') renderCustomItems();
+        updateCustomItemValidation(index);
+        calculateCosts();
+    }
+
+    function updateCustomItemValidation(index) {
+        const item = wizardState.additionalItems[index];
+        const message = item?.finishError
+            ? 'Price not configured — enter a rate and request estimation approval.'
+            : item?.priceOverrideRequested && !item.authorizedOverride
+                ? 'A changed reference price requires quotation-specific approval.'
+                : '';
+        const node = document.getElementById(`custom-item-validation-${index}`);
+        if (node) {
+            node.textContent = message;
+            node.classList.toggle('hidden', !message);
+        }
+    }
+
+    function updateQuoteDiscount(value) {
+        wizardState.discount = value === '' ? '' : Number(value);
+        calculateCosts();
+    }
+
+    function renderCustomItems() {
+        const container = document.getElementById('custom-items-list');
+        document.getElementById('custom-items-empty').classList.toggle('hidden', wizardState.additionalItems.length > 0);
+        container.innerHTML = wizardState.additionalItems.map((item, index) => {
+            const catalogueItem = settings.catalogue.find(entry => entry.id === item.catalogueId);
+            const finishes = item.catalogueFinishes || catalogueItem?.finishes || [];
+            return `
+            <div class="rounded-lg border border-slate-200 bg-slate-50 p-4" data-custom-item="${index}">
+                <div class="flex items-center justify-between gap-2 mb-3">
+                    <span class="text-[10px] uppercase tracking-wider font-bold ${item.source === 'catalogue' ? 'text-amber-700' : 'text-slate-500'}">${item.source === 'catalogue' ? 'Indicative catalogue item' : 'Custom item'}</span>
+                    <button type="button" onclick="removeCustomItem(${index})" class="text-red-600 text-xs font-bold"><i class="ph ph-trash mr-1"></i>Remove</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div><label class="form-label">Item Name *</label><input type="text" class="form-input" value="${escapeHtml(item.name)}" oninput="updateCustomItem(${index},'name',this.value)" placeholder="Additional wardrobe"></div>
+                    <div><label class="form-label">Room</label><input type="text" class="form-input" value="${escapeHtml(item.room)}" oninput="updateCustomItem(${index},'room',this.value)" placeholder="Bedroom 1"></div>
+                    <div><label class="form-label">Measurement Unit</label><select class="form-input" onchange="updateCustomItem(${index},'unit',this.value)">${CUSTOM_ITEM_UNITS.map(unit => `<option value="${unit}" ${item.unit === unit ? 'selected' : ''}>${unit}</option>`).join('')}</select></div>
+                    <div class="md:col-span-2"><label class="form-label">Description / Layout</label><input type="text" class="form-input" value="${escapeHtml(item.description || '')}" oninput="updateCustomItem(${index},'description',this.value)" placeholder="L-shaped layout, shutter configuration, etc."></div>
+                    <div>
+                        <label class="form-label">Material / Finish</label>
+                        ${item.catalogueId ? `<select class="form-input" onchange="applyItemFinish(${index},this.value)"><option value="Standard (reference)" ${!item.specification || item.specification === 'Standard (reference)' ? 'selected' : ''}>Standard (reference)</option>${finishes.map(finish => `<option value="${escapeHtml(finish.name)}" ${item.specification === finish.name ? 'selected' : ''}>${escapeHtml(finish.name)}${finish.rate === null || finish.rate === '' ? ' — price not configured' : ` — ₹${fmtCurrency(finish.rate)}`}</option>`).join('')}</select>` : `<input type="text" class="form-input" value="${escapeHtml(item.specification || '')}" oninput="updateCustomItem(${index},'specification',this.value)" placeholder="Specify approved material/finish">`}
+                    </div>
+                    <div><label class="form-label">Quantity ${item.unit === 'LUMP SUM' ? '(optional)' : '*'}</label><input type="number" min="0" step="any" class="form-input" value="${escapeHtml(item.quantity)}" oninput="updateCustomItem(${index},'quantity',this.value)"></div>
+                    <div><label class="form-label">Rate (₹ / ${escapeHtml(item.unit)}) *</label><input type="number" min="0" step="any" class="form-input" value="${escapeHtml(item.rate)}" oninput="updateCustomItem(${index},'rate',this.value)">${item.referenceQuantityLabel ? `<span class="block text-[10px] text-slate-500 mt-1">Reference quantity: ${escapeHtml(item.referenceQuantityLabel)} · estimate ₹${fmtCurrency(item.referenceAmount)}</span>` : ''}</div>
+                    <div class="flex items-end"><div><label class="form-label">Amount</label><div id="custom-item-amount-${index}" class="font-bold text-slate-800">₹${fmtCurrency(item.amount || 0)}</div></div></div>
+                    <p id="custom-item-validation-${index}" class="md:col-span-3 text-xs text-red-700 ${item.finishError || item.priceOverrideRequested && !item.authorizedOverride ? '' : 'hidden'}" role="alert">${item.finishError ? 'Price not configured — enter a rate and request estimation approval.' : 'A changed reference price requires quotation-specific approval.'}</p>
+                    ${item.source === 'catalogue' ? `<label class="md:col-span-3 text-xs flex items-center gap-2"><input type="checkbox" ${item.authorizedOverride ? 'checked' : ''} onchange="authorizeCatalogueOverride(${index},this.checked)"> I am authorized to override this reference price / unconfigured finish for this quotation only.</label>` : ''}
+                    ${item.source === 'catalogue' ? `<p class="md:col-span-3 text-[10px] text-amber-800">Market benchmark: ${escapeHtml(item.marketBenchmark || 'Not configured')} · ${escapeHtml(item.gstTreatment || 'Exclusive of configured GST')}. ${escapeHtml(REFERENCE_PRICE_DISCLAIMER)}</p>` : ''}
+                    <div class="md:col-span-3"><label class="form-label">Notes / Exclusions</label><input type="text" class="form-input" value="${escapeHtml(item.notes)}" oninput="updateCustomItem(${index},'notes',this.value)"></div>
+                </div>
+            </div>
+        `}).join('');
     }
 
     function checkWizard() {
@@ -813,58 +1598,120 @@
         wizardState.email = document.getElementById('wiz-email').value.trim();
         wizardState.location = document.getElementById('wiz-location').value.trim();
         
-        const ok = wizardState.name && wizardState.phone && wizardState.location && wizardState.propertyType;
+        const hasClientDetails = wizardState.name && wizardState.phone && wizardState.location &&
+            (wizardState.quotationMode === 'manual' || wizardState.propertyType);
         const step2 = document.getElementById('wizard-step-2');
-        if (ok) {
+        if (hasClientDetails) {
             step2.classList.remove('opacity-50', 'pointer-events-none');
         } else {
             step2.classList.add('opacity-50', 'pointer-events-none');
         }
+        const areaInput = document.getElementById('wiz-total-area');
+        const areaValid = areaInput.value === ''
+            ? wizardState.quotationMode === 'manual'
+            : Number.isFinite(Number(areaInput.value)) && Number(areaInput.value) >= 0;
+        const discountsAllowed = settings.discountsEnabled || wizardState.discountAuthorized;
+        const quotation = calculateQuotation(wizardState.quotationMode, wizardState.propertyType, wizardState.additionalItems,
+            wizardState.gstRate ?? settings.gstRate, discountsAllowed ? wizardState.discount : 0);
+        document.getElementById('package-config-error').classList.toggle('hidden',
+            wizardState.quotationMode !== 'standard' || !wizardState.propertyType || quotation.valid || !quotation.error.includes('configuration'));
+        document.getElementById('btn-generate-doc').disabled = !hasClientDetails || !areaValid || !quotation.valid;
     }
 
-    function calculateCosts(isManualSplit = false) {
-        wizardState.totalArea = parseFloat(document.getElementById('wiz-total-area').value) || 0;
-        const mode = document.getElementById('wiz-split-mode').value;
-        
-        const dryInp = document.getElementById('wiz-dry-area');
-        const wetInp = document.getElementById('wiz-wet-area');
-        
-        if (mode === 'auto' && !isManualSplit) {
-            dryInp.readOnly = true;
-            wetInp.readOnly = true;
-            dryInp.classList.add('bg-slate-50');
-            wetInp.classList.add('bg-slate-50');
-            
-            wizardState.dryArea = Math.round(wizardState.totalArea * 0.8);
-            wizardState.wetArea = Math.round(wizardState.totalArea * 0.2);
-            dryInp.value = wizardState.dryArea;
-            wetInp.value = wizardState.wetArea;
-        } else if (mode === 'custom') {
-            dryInp.readOnly = false;
-            wetInp.readOnly = false;
-            dryInp.classList.remove('bg-slate-50');
-            wetInp.classList.remove('bg-slate-50');
-            
-            wizardState.dryArea = parseFloat(dryInp.value) || 0;
-            wizardState.wetArea = parseFloat(wetInp.value) || 0;
+    function calculateCosts() {
+        const areaValue = document.getElementById('wiz-total-area').value;
+        wizardState.totalArea = areaValue === '' ? 0 : Number(areaValue);
+        const discountsAllowed = settings.discountsEnabled || wizardState.discountAuthorized;
+        if (!discountsAllowed) wizardState.discount = 0;
+        const pkg = wizardState.quotationMode === 'standard' ? getStandardPackage(wizardState.propertyType) : null;
+        const packageError = getPackageConfigurationError(pkg);
+        const areaWarning = document.getElementById('property-area-warning');
+        const configError = document.getElementById('package-config-error');
+        configError.classList.toggle('hidden', wizardState.quotationMode !== 'standard' || !wizardState.propertyType || !packageError);
+        const dryDisplay = document.getElementById('wiz-dry-area-display');
+        const wetDisplay = document.getElementById('wiz-wet-area-display');
+        if (wizardState.quotationMode !== 'standard' || !pkg || packageError) {
+            document.getElementById('wiz-package-name').textContent = wizardState.propertyType ? 'Package pricing unavailable.' : 'Select a home type to see package pricing.';
+            [dryDisplay, wetDisplay, document.getElementById('wiz-dry-rate-display'), document.getElementById('wiz-wet-rate-display')].forEach(node => node.textContent = '—');
+            document.getElementById('wiz-dry-cost').textContent = '₹0';
+            document.getElementById('wiz-wet-cost').textContent = '₹0';
+            document.getElementById('wiz-package-total').textContent = '₹0';
+            document.getElementById('wiz-package-scope').innerHTML = '';
+            areaWarning.classList.add('hidden');
+            wizardState.standardPackageAmount = 0;
+        } else {
+            const packageAmounts = calculateStandardPackage(pkg);
+            wizardState.dryArea = Number(pkg.dryArea);
+            wizardState.wetArea = Number(pkg.wetArea);
+            wizardState.standardPackageAmount = packageAmounts.standardPackageAmount;
+            document.getElementById('wiz-package-name').textContent = pkg.name;
+            dryDisplay.textContent = `${fmtMoney(pkg.dryArea)} sq.ft`;
+            wetDisplay.textContent = `${fmtMoney(pkg.wetArea)} sq.ft`;
+            document.getElementById('wiz-dry-rate-display').textContent = `₹${fmtCurrency(pkg.dryRate)} / sq.ft`;
+            document.getElementById('wiz-wet-rate-display').textContent = `₹${fmtCurrency(pkg.wetRate)} / sq.ft`;
+            document.getElementById('wiz-dry-cost').textContent = `₹${fmtCurrency(packageAmounts.dryAmount)}`;
+            document.getElementById('wiz-wet-cost').textContent = `₹${fmtCurrency(packageAmounts.wetAmount)}`;
+            document.getElementById('wiz-package-total').textContent = `₹${fmtCurrency(packageAmounts.standardPackageAmount)}`;
+            renderPackageScope(pkg, 'wiz-package-scope');
+
+            const expectedPropertyArea = (Number(pkg.dryArea) + Number(pkg.wetArea)) * 2;
+            const area = Number(areaValue);
+            const outsideExpectedRange = areaValue !== '' && Number.isFinite(area) &&
+                (area < expectedPropertyArea * 0.65 || area > expectedPropertyArea * 1.35);
+            areaWarning.textContent = 'Property area differs significantly from the standard package. Verify scope before finalizing the quotation.';
+            areaWarning.classList.toggle('hidden', !outsideExpectedRange);
         }
 
-        const costDry = wizardState.dryArea * settings.rateDry;
-        const costWet = wizardState.wetArea * settings.rateWet;
-        wizardState.totalCost = costDry + costWet;
-
-        document.getElementById('wiz-dry-cost').textContent = `₹${fmtMoney(costDry)}`;
-        document.getElementById('wiz-wet-cost').textContent = `₹${fmtMoney(costWet)}`;
-        document.getElementById('wiz-total-cost').textContent = `₹${fmtMoney(wizardState.totalCost)}`;
-
-        document.getElementById('btn-generate-doc').disabled = wizardState.totalArea < 100;
+        const quotation = calculateQuotation(wizardState.quotationMode, wizardState.propertyType, wizardState.additionalItems,
+            wizardState.gstRate ?? settings.gstRate, discountsAllowed ? wizardState.discount : 0);
+        wizardState.additionalItems.forEach((item, index) => {
+            const amountNode = document.getElementById(`custom-item-amount-${index}`);
+            if (amountNode) amountNode.textContent = `₹${fmtCurrency(quotation.additionalItems?.[index]?.amount || 0)}`;
+        });
+        wizardState.additionalItemsTotal = quotation.additionalItemsTotal || 0;
+        wizardState.totalCost = quotation.taxableSubtotal || 0;
+        wizardState.itemsSubtotal = quotation.subtotal || 0;
+        wizardState.discountAmount = quotation.discount || 0;
+        wizardState.gstAmount = quotation.gstAmount || 0;
+        wizardState.grandTotal = quotation.grandTotal || 0;
+        document.getElementById('wiz-additional-total').textContent = `₹${fmtCurrency(wizardState.additionalItemsTotal)}`;
+        document.getElementById('wiz-subtotal-package').textContent = `₹${fmtCurrency(wizardState.standardPackageAmount)}`;
+        document.getElementById('wiz-subtotal-additional').textContent = `₹${fmtCurrency(wizardState.additionalItemsTotal)}`;
+        document.getElementById('summary-discount-row').classList.toggle('hidden', !discountsAllowed);
+        document.getElementById('wiz-discount-input').disabled = !settings.discountsEnabled && !wizardState.discountAuthorized;
+        document.getElementById('wiz-discount-input').value = wizardState.discount || 0;
+        document.getElementById('wiz-total-cost').textContent = `₹${fmtCurrency(wizardState.totalCost)}`;
+        const gstRate = wizardState.gstRate ?? settings.gstRate;
+        document.getElementById('wiz-gst-label').textContent = `GST${Number(gstRate) ? ` (${fmtMoney(gstRate)}%)` : ' (not applied)'}`;
+        document.getElementById('wiz-gst-amount').textContent = `₹${fmtCurrency(wizardState.gstAmount)}`;
+        document.getElementById('wiz-grand-total').textContent = `₹${fmtCurrency(wizardState.grandTotal)}`;
+        const areaValid = areaValue === ''
+            ? wizardState.quotationMode === 'manual'
+            : Number.isFinite(Number(areaValue)) && Number(areaValue) >= 0;
+        const hasClientDetails = Boolean(wizardState.name && wizardState.phone && wizardState.location &&
+            (wizardState.quotationMode === 'manual' || wizardState.propertyType));
+        document.getElementById('custom-items-error').classList.toggle('hidden', quotation.valid || wizardState.additionalItems.length === 0 && wizardState.quotationMode === 'standard');
+        document.getElementById('custom-items-error').textContent = quotation.error;
+        document.getElementById('btn-generate-doc').disabled = !wizardState.name || !wizardState.phone || !wizardState.location ||
+            (wizardState.quotationMode === 'standard' && (!wizardState.propertyType || !areaValid || packageError)) ||
+            (wizardState.quotationMode === 'manual' && !areaValid) || !quotation.valid;
     }
 
     function startNewQuotation() {
         Object.keys(wizardState).forEach(k => wizardState[k] = (typeof wizardState[k] === 'number' ? 0 : ''));
-        ['wiz-name','wiz-phone','wiz-email','wiz-location','wiz-total-area','wiz-dry-area','wiz-wet-area'].forEach(id => document.getElementById(id).value = '');
-        document.querySelectorAll('.home-type-card').forEach(c => c.classList.remove('selected'));
-        document.getElementById('wiz-split-mode').value = 'auto';
+        wizardState.calculationVersion = 3;
+        wizardState.quotationMode = 'standard';
+        wizardState.packageSnapshot = null;
+        wizardState.packageId = '';
+        wizardState.gstRate = null;
+        wizardState.quoteDate = '';
+        wizardState.discount = 0;
+        wizardState.discountAuthorized = false;
+        ['wiz-name','wiz-phone','wiz-email','wiz-location','wiz-total-area'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('wiz-property-type').value = '';
+        wizardState.additionalItems = [];
+        renderCustomItems();
+        setQuotationMode('standard');
         calculateCosts();
         checkWizard();
         
@@ -877,6 +1724,37 @@
     // DOCUMENT EDITOR / PDF PREP
     // ─────────────────────────────────────────────────────────
     function prepareDocument() {
+        checkWizard();
+        calculateCosts();
+        const gstRate = wizardState.gstRate ?? settings.gstRate;
+        const discount = settings.discountsEnabled || wizardState.discountAuthorized ? wizardState.discount : 0;
+        const quotation = calculateQuotation(wizardState.quotationMode, wizardState.propertyType,
+            wizardState.additionalItems, gstRate, discount);
+        const areaInput = document.getElementById('wiz-total-area').value;
+        const areaInvalid = areaInput === ''
+            ? wizardState.quotationMode === 'standard'
+            : !Number.isFinite(Number(areaInput)) || Number(areaInput) < 0;
+        if (!quotation.valid || areaInvalid) {
+            showToast(quotation.error || 'Enter a valid, non-negative customer property area before continuing.');
+            return;
+        }
+        if (!wizardState.name || !wizardState.phone || !wizardState.location) {
+            showToast('Complete the required client and project details before generating the quotation.');
+            return;
+        }
+        wizardState.calculationVersion = 3;
+        wizardState.packageId = wizardState.quotationMode === 'standard' ? HOME_TYPE_IDS[wizardState.propertyType] : '';
+        wizardState.totalCost = quotation.taxableSubtotal;
+        wizardState.itemsSubtotal = quotation.subtotal;
+        wizardState.discountAmount = quotation.discount;
+        wizardState.standardPackageAmount = quotation.standardPackageAmount;
+        wizardState.additionalItemsTotal = quotation.additionalItemsTotal;
+        wizardState.gstAmount = quotation.gstAmount;
+        wizardState.grandTotal = quotation.grandTotal;
+        wizardState.packageSnapshot = quotation.pkg ? JSON.parse(JSON.stringify(quotation.pkg)) : null;
+        wizardState.gstRate = gstRate;
+        wizardState.discount = discount;
+        wizardState.additionalItems = quotation.additionalItems;
         if (!currentQuotId) currentQuotId = generateQuotationId();
 
         // Branding
@@ -902,7 +1780,8 @@
         
         // Meta
         document.getElementById('doc-quote-no').textContent = currentQuotId;
-        document.getElementById('doc-date').textContent = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric'});
+        wizardState.quoteDate = wizardState.quoteDate || new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric'});
+        document.getElementById('doc-date').textContent = wizardState.quoteDate;
         document.getElementById('doc-validity').textContent = settings.validity;
 
         // Client & Project
@@ -911,35 +1790,58 @@
         document.getElementById('doc-cust-email').textContent = wizardState.email;
         document.getElementById('doc-cust-location').textContent = wizardState.location;
         
-        document.getElementById('doc-prop-type').textContent = wizardState.propertyType;
-        document.getElementById('doc-total-area').textContent = `Total Area: ${fmtMoney(wizardState.totalArea)} sq.ft`;
-        
-        // Ensure dry area / wet area nodes exist in case we need to map them elsewhere, but we removed them from the project details box to clean up space (or kept them, let's map safely)
-        const docDryArea = document.getElementById('doc-dry-area');
-        if(docDryArea) docDryArea.textContent = `${fmtMoney(wizardState.dryArea)} sq.ft`;
-        const docWetArea = document.getElementById('doc-wet-area');
-        if(docWetArea) docWetArea.textContent = `${fmtMoney(wizardState.wetArea)} sq.ft`;
+        const standardMode = wizardState.quotationMode === 'standard';
+        document.getElementById('doc-quotation-type').textContent = standardMode ? 'Standard Package Estimate' : 'Manual Estimate';
+        document.getElementById('doc-prop-type').textContent = standardMode ? wizardState.propertyType : 'Selected rooms / items';
+        document.getElementById('doc-total-area').textContent = areaInput === ''
+            ? 'Customer property area: Not provided'
+            : `Customer Property Area: ${fmtMoney(wizardState.totalArea)} sq.ft`;
 
-        // Cost Table
-        document.getElementById('doc-tbl-dry-sqft').textContent = `${fmtMoney(wizardState.dryArea)} sq.ft`;
-        document.getElementById('doc-tbl-dry-rate').textContent = `₹${fmtMoney(settings.rateDry)}`;
-        document.getElementById('doc-tbl-dry-amt').textContent = `₹${fmtMoney(wizardState.dryArea * settings.rateDry)}`;
+        document.getElementById('doc-package-calculation').classList.toggle('hidden', !standardMode);
+        document.getElementById('doc-package-scope-section').classList.toggle('hidden', !standardMode);
+        if (standardMode) {
+            const pkg = quotation.pkg;
+            document.getElementById('doc-package-name').textContent = pkg.name;
+            document.getElementById('doc-package-dry-basis').textContent = `${fmtMoney(pkg.dryArea)} sq.ft × ₹${fmtCurrency(pkg.dryRate)}`;
+            document.getElementById('doc-package-dry-amount').textContent = `₹${fmtCurrency(quotation.dryAmount)}`;
+            document.getElementById('doc-package-wet-basis').textContent = `${fmtMoney(pkg.wetArea)} sq.ft × ₹${fmtCurrency(pkg.wetRate)}`;
+            document.getElementById('doc-package-wet-amount').textContent = `₹${fmtCurrency(quotation.wetAmount)}`;
+            document.getElementById('doc-package-total').textContent = `₹${fmtCurrency(quotation.standardPackageAmount)}`;
+            renderPackageScope(pkg, 'doc-package-scope');
+        }
 
-        document.getElementById('doc-tbl-wet-sqft').textContent = `${fmtMoney(wizardState.wetArea)} sq.ft`;
-        document.getElementById('doc-tbl-wet-rate').textContent = `₹${fmtMoney(settings.rateWet)}`;
-        document.getElementById('doc-tbl-wet-amt').textContent = `₹${fmtMoney(wizardState.wetArea * settings.rateWet)}`;
+        const customItemsBody = document.getElementById('doc-custom-items');
+        const hasCustomItems = quotation.additionalItems.length > 0;
+        document.getElementById('doc-no-custom-items').classList.toggle('hidden', hasCustomItems);
+        document.getElementById('doc-custom-items-wrap').classList.toggle('hidden', !hasCustomItems);
+        document.getElementById('doc-items-heading').textContent = standardMode
+            ? 'Additional / Custom Requirements'
+            : 'Manual Estimate Items';
+        customItemsBody.innerHTML = quotation.additionalItems.map(item => `
+            <tr>
+                <td class="font-bold"><span class="block">${escapeHtml([item.room, item.name].filter(Boolean).join(' / '))}</span><span class="text-[7px] font-normal uppercase text-slate-500">${item.source === 'catalogue' ? 'Indicative catalogue' : 'Custom item'}</span></td>
+                <td>${escapeHtml([item.description, item.specification, item.notes].filter(Boolean).join(' · ') || 'Additional/custom requirement')}</td>
+                <td class="text-right">${item.unit === 'LUMP SUM' ? '—' : `${fmtMoney(item.quantity)} `}${escapeHtml(item.unit)}</td>
+                <td class="text-right">₹${fmtCurrency(item.rate)}</td>
+                <td class="text-right font-bold">₹${fmtCurrency(item.amount)}</td>
+            </tr>
+        `).join('');
+        document.getElementById('doc-estimate-note').textContent = standardMode
+            ? 'Package inclusions are descriptive and are included in the single package value; they are not charged again. Additional items are separately priced. Final pricing is subject to site measurement, specification confirmation and approved scope.'
+            : `Indicative estimate only. ${REFERENCE_PRICE_DISCLAIMER} Final pricing is subject to site measurement, specification confirmation and approved scope.`;
 
         // Financial Summary
-        const subtotal = wizardState.totalCost;
-        document.getElementById('doc-sum-subtotal').textContent = `₹${fmtMoney(subtotal)}`;
-        document.getElementById('doc-sum-discount').textContent = `₹0`;
-        document.getElementById('doc-sum-taxable').textContent = `₹${fmtMoney(subtotal)}`;
-        document.getElementById('doc-sum-gst').textContent = `₹0`;
+        document.getElementById('doc-subtotal-label').textContent = 'Items Subtotal';
+        document.getElementById('doc-sum-subtotal').textContent = `₹${fmtCurrency(quotation.subtotal)}`;
+        document.getElementById('doc-discount-row').classList.toggle('hidden',
+            !((settings.discountsEnabled || wizardState.discountAuthorized) && quotation.discount > 0));
+        document.getElementById('doc-sum-discount').textContent = `−₹${fmtCurrency(quotation.discount)}`;
+        document.getElementById('doc-sum-taxable').textContent = `₹${fmtCurrency(quotation.taxableSubtotal)}`;
+        document.getElementById('doc-gst-label').textContent = `GST${Number(gstRate) ? ` (${fmtMoney(gstRate)}%)` : ' (not applied)'}`;
+        document.getElementById('doc-sum-gst').textContent = `₹${fmtCurrency(quotation.gstAmount)}`;
         
         const sumTotalEl = document.getElementById('doc-sum-total');
-        if(sumTotalEl) sumTotalEl.textContent = `₹${fmtMoney(subtotal)}`;
-        const tblTotalEl = document.getElementById('doc-tbl-total');
-        if(tblTotalEl) tblTotalEl.textContent = `₹${fmtMoney(subtotal)}`;
+        if(sumTotalEl) sumTotalEl.textContent = `₹${fmtCurrency(quotation.grandTotal)}`;
 
         // Payment & Bank & Warranty
         document.getElementById('doc-bank-name').textContent = settings.bankName;
@@ -1051,7 +1953,7 @@
     }
 
     function shareQuotation() {
-        const text = `${settings.companyName} Quotation for ${wizardState.name}\nID: ${currentQuotId}\nTotal: ₹${fmtMoney(wizardState.totalCost)}\n\nPlease find the PDF attached or request a copy.`;
+        const text = `${settings.companyName} Quotation for ${wizardState.name}\nID: ${currentQuotId}\nTotal: ₹${fmtCurrency(wizardState.grandTotal)}\n\nPlease find the PDF attached or request a copy.`;
         if (navigator.share) {
             navigator.share({ title: `Quotation ${currentQuotId}`, text });
             saveQuotation('sent');
@@ -1090,13 +1992,36 @@
 
     function saveQuotation(status) {
         if (!currentQuotId) return;
-        
+        const existing = quotations.find(q => q.id === currentQuotId);
+        wizardState.quoteDate = wizardState.quoteDate || existing?.date ||
+            new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
         const record = {
             id: currentQuotId,
             client: wizardState.name,
-            total: wizardState.totalCost,
-            date: new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }),
-            status: status
+            phone: wizardState.phone,
+            email: wizardState.email,
+            location: wizardState.location,
+            total: wizardState.grandTotal,
+            date: wizardState.quoteDate,
+            status,
+            calculationVersion: wizardState.calculationVersion || 3,
+            quotationMode: wizardState.quotationMode || 'standard',
+            homeType: wizardState.propertyType,
+            packageId: wizardState.packageId,
+            customerPropertyArea: document.getElementById('wiz-total-area').value === ''
+                ? null
+                : Number(document.getElementById('wiz-total-area').value),
+            package: wizardState.packageSnapshot ? JSON.parse(JSON.stringify(wizardState.packageSnapshot)) : undefined,
+            additionalItems: wizardState.additionalItems.map(item => ({ ...item })),
+            gstRate: wizardState.gstRate ?? settings.gstRate,
+            discountEnabled: settings.discountsEnabled || wizardState.discountAuthorized,
+            discount: wizardState.discountAmount || 0,
+            itemsSubtotal: wizardState.itemsSubtotal ?? wizardState.totalCost,
+            standardPackageAmount: wizardState.standardPackageAmount,
+            subtotal: wizardState.itemsSubtotal ?? wizardState.totalCost,
+            taxableSubtotal: wizardState.totalCost,
+            gstAmount: wizardState.gstAmount,
+            grandTotal: wizardState.grandTotal
         };
 
         const idx = quotations.findIndex(q => q.id === currentQuotId);
@@ -1115,18 +2040,19 @@
 
         const getBadge = s => {
             const map = { draft:'bg-slate-100 text-slate-600', generated:'bg-sky-100 text-sky-700', sent:'bg-amber-100 text-amber-700', approved:'bg-emerald-100 text-emerald-700' };
-            return `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${map[s]||'bg-slate-100 text-slate-600'}">${s}</span>`;
+            return `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${map[s]||'bg-slate-100 text-slate-600'}">${escapeHtml(s)}</span>`;
         };
 
-        tbody.innerHTML = quotations.map(q => `
+        tbody.innerHTML = quotations.map((q, index) => `
             <tr class="hover:bg-slate-50 transition">
-                <td class="px-6 py-4 font-mono text-xs font-bold text-gold-600">${q.id}</td>
-                <td class="px-6 py-4 font-semibold text-slate-800 text-sm">${q.client}</td>
-                <td class="px-6 py-4 text-slate-500 text-xs">${q.date}</td>
-                <td class="px-6 py-4 font-bold text-slate-800 text-sm">₹${fmtMoney(q.total)}</td>
+                <td class="px-6 py-4 font-mono text-xs font-bold text-gold-600">${escapeHtml(q.id)}</td>
+                <td class="px-6 py-4 font-semibold text-slate-800 text-sm">${escapeHtml(q.client)}<span class="block text-[10px] text-slate-500 uppercase">${escapeHtml(q.quotationMode === 'manual' ? 'Manual estimate' : 'Standard package')}</span></td>
+                <td class="px-6 py-4 text-slate-500 text-xs">${escapeHtml(q.date)}</td>
+                <td class="px-6 py-4 font-bold text-slate-800 text-sm">₹${fmtCurrency(q.total)}</td>
                 <td class="px-6 py-4">${getBadge(q.status)}</td>
                 <td class="px-6 py-4 text-right">
-                    <select class="text-xs border border-slate-200 rounded p-1" onchange="updateQuoteStatus('${q.id}', this.value)">
+                    <button type="button" class="text-xs font-bold text-gold-700 border border-gold-300 rounded px-2 py-1 mr-1" onclick="openQuotationByIndex(${index})">Open / Edit</button>
+                    <select class="text-xs border border-slate-200 rounded p-1" onchange="updateQuoteStatusByIndex(${index}, this.value)">
                         <option value="draft" ${q.status==='draft'?'selected':''}>Draft</option>
                         <option value="generated" ${q.status==='generated'?'selected':''}>Generated</option>
                         <option value="sent" ${q.status==='sent'?'selected':''}>Sent</option>
@@ -1137,14 +2063,73 @@
         `).join('');
     }
 
-    function updateQuoteStatus(id, newStatus) {
-        const q = quotations.find(q => q.id === id);
+    function updateQuoteStatusByIndex(index, newStatus) {
+        const q = quotations[index];
         if (q) {
             q.status = newStatus;
             localStorage.setItem('dadodec_unified_quotes', JSON.stringify(quotations));
             renderDashboard();
             showToast('✅ Status updated');
         }
+    }
+
+    function openQuotationByIndex(index) {
+        const quote = quotations[index];
+        const mode = quote?.quotationMode || 'standard';
+        const standardQuoteValid = mode !== 'standard' || (
+            quote?.package && quote.packageId && HOME_TYPE_IDS[quote.homeType] &&
+            quote.packageId === HOME_TYPE_IDS[quote.homeType] && !getPackageConfigurationError(quote.package)
+        );
+        const itemsValid = Array.isArray(quote?.additionalItems) && quote.additionalItems.every(item => item &&
+            typeof item.name === 'string' && item.name.trim() && typeof item.room === 'string' &&
+            typeof item.notes === 'string' && CUSTOM_ITEM_UNITS.includes(item.unit) &&
+            (item.unit === 'LUMP SUM' || (item.quantity !== '' && Number.isFinite(Number(item.quantity)) && Number(item.quantity) >= 0)) &&
+            Number.isFinite(Number(item.rate)) && Number(item.rate) >= 0 &&
+            (!(item.finishError || item.priceOverrideRequested) || item.authorizedOverride));
+        const propertyAreaValid = quote?.customerPropertyArea == null
+            ? mode === 'manual'
+            : Number.isFinite(Number(quote.customerPropertyArea)) && Number(quote.customerPropertyArea) >= 0;
+        const supportedVersion = quote && [2, 3].includes(quote.calculationVersion);
+        if (!quote || !supportedVersion || !['standard', 'manual'].includes(mode) ||
+            (mode === 'manual' && quote.calculationVersion < 3) ||
+            !standardQuoteValid || !itemsValid || (mode === 'manual' && !quote.additionalItems.length) ||
+            !quote.client || !quote.phone || !quote.location ||
+            !propertyAreaValid ||
+            !Number.isFinite(Number(quote.gstRate)) || Number(quote.gstRate) < 0 ||
+            (quote.discount !== undefined && (!Number.isFinite(Number(quote.discount)) || Number(quote.discount) < 0))) {
+            showToast('This saved quotation does not contain the details required to reopen it. It remains available in your history.');
+            return;
+        }
+
+        Object.assign(wizardState, {
+            name: quote.client,
+            phone: quote.phone,
+            email: quote.email || '',
+            location: quote.location,
+            propertyType: mode === 'standard' ? quote.homeType : '',
+            totalArea: Number(quote.customerPropertyArea),
+            packageId: mode === 'standard' ? quote.packageId : '',
+            packageSnapshot: mode === 'standard' ? JSON.parse(JSON.stringify(quote.package)) : null,
+            additionalItems: quote.additionalItems.map(item => ({ ...item })),
+            gstRate: Number(quote.gstRate),
+            quotationMode: mode,
+            discount: Number(quote.discount || 0),
+            discountAuthorized: Boolean(quote.discountEnabled),
+            quoteDate: quote.date || '',
+            calculationVersion: 3
+        });
+        currentQuotId = quote.id;
+        document.getElementById('wiz-name').value = wizardState.name;
+        document.getElementById('wiz-phone').value = wizardState.phone;
+        document.getElementById('wiz-email').value = wizardState.email;
+        document.getElementById('wiz-location').value = wizardState.location;
+        document.getElementById('wiz-total-area').value = quote.customerPropertyArea ?? '';
+        renderHomeTypes();
+        setQuotationMode(mode);
+        renderCustomItems();
+        calculateCosts();
+        checkWizard();
+        switchView('wizard');
     }
     </script>
 </body>
